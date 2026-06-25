@@ -120,7 +120,7 @@ export default async function handler(req, res) {
             const accountHeaders = {
                 Authorization: `Bearer ${tokenData.access_token}`,
                 'Content-Type': 'application/json',
-                ...(app_id ? { 'X-APP-ID': app_id } : {}),
+                ...(app_id ? { 'Deriv-App-ID': app_id } : {}),
             };
 
             const preferredAccount = cookies.oauth_preferred_account;
