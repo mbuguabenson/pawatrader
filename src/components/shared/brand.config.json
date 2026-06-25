@@ -80,8 +80,8 @@
         "server_base_url": "https://auth.deriv.com",
         "authorization_path": "/oauth2/auth",
         "token_url": "https://auth.deriv.com/oauth2/token",
-        "redirect_uri": "https://pawatrader.vercel.app/callback",
-        "callback_uri": "https://pawatrader.vercel.app/callback",
+        "redirect_uri": "https://brixxie-theta.vercel.app/callback",
+        "callback_uri": "https://brixxie-theta.vercel.app/callback",
         "client_id": "33Ewt49lIGOqAsySdsUsG",
         "app_id": "",
         "scope": "trade"
