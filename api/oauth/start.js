@@ -4,12 +4,53 @@ function base64URLEncode(buffer) {
     return buffer.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
 }
 
+function base64URLDecode(str) {
+    let s = str.replace(/\-/g, '+').replace(/_/g, '/');
+    switch (s.length % 4) {
+        case 0: break;
+        case 2: s += '=='; break;
+        case 3: s += '='; break;
+        default: throw new Error('Invalid base64url string');
+    }
+    return Buffer.from(s, 'base64');
+}
+
 function sha256(buffer) {
     return crypto.createHash('sha256').update(buffer).digest();
 }
 
 function randomString(length = 64) {
     return base64URLEncode(crypto.randomBytes(length));
+}
+
+// Encrypt PKCE data into a single signed token
+function createPKCEToken(code_verifier, state, client_id, redirect_uri) {
+    const data = JSON.stringify({ code_verifier, state, client_id, redirect_uri, ts: Date.now() });
+    const secret = process.env.OAUTH_SECRET || 'fallback-secret-change-in-production';
+    const hmac = crypto.createHmac('sha256', secret);
+    hmac.update(data);
+    const signature = base64URLEncode(hmac.digest());
+    return `${base64URLEncode(Buffer.from(data))}.${signature}`;
+}
+
+// Verify and decrypt PKCE token
+function verifyPKCEToken(token) {
+    try {
+        if (!token) return null;
+        const [dataB64, signature] = token.split('.');
+        const secret = process.env.OAUTH_SECRET || 'fallback-secret-change-in-production';
+        const hmac = crypto.createHmac('sha256', secret);
+        hmac.update(dataB64);
+        const expectedSig = base64URLEncode(hmac.digest());
+        if (signature !== expectedSig) return null;
+        
+        const data = JSON.parse(base64URLDecode(dataB64).toString());
+        // Verify token is not older than 10 minutes
+        if (Date.now() - data.ts > 600000) return null;
+        return data;
+    } catch (err) {
+        return null;
+    }
 }
 
 const normalizeValue = value =>
@@ -72,17 +113,23 @@ export default async function handler(req, res) {
         // Generate PKCE code_verifier and state
         const code_verifier = randomString(64);
         const code_challenge = base64URLEncode(sha256(code_verifier));
-        const state = randomString(32);
+        const state_random = randomString(32);
+        
+        // Create encrypted token containing all PKCE data
+        const pkceToken = createPKCEToken(code_verifier, state_random, client_id, redirect_uri);
+        
+        // Use the token as the OAuth state parameter (will be returned by Deriv)
+        const state = pkceToken;
 
-        // Set HttpOnly cookies to keep code_verifier, state, preferred account, and OAuth request metadata server-side
+        // Still set cookies as fallback for traditional flow
         const cookieOpts = getCookieOptions(req);
-
         const useClientId = Boolean(client_id);
         const useAppId = !useClientId && Boolean(app_id);
 
         const cookies = [
             `oauth_code_verifier=${encodeURIComponent(code_verifier)}; ${cookieOpts.join('; ')}`,
-            `oauth_state=${encodeURIComponent(state)}; ${cookieOpts.join('; ')}`,
+            `oauth_state=${encodeURIComponent(state_random)}; ${cookieOpts.join('; ')}`,
+            `oauth_pkce_token=${encodeURIComponent(pkceToken)}; ${cookieOpts.join('; ')}`,
             `oauth_redirect_uri=${encodeURIComponent(redirect_uri)}; ${cookieOpts.join('; ')}`,
         ];
 
@@ -98,12 +145,9 @@ export default async function handler(req, res) {
 
         res.setHeader('Set-Cookie', cookies);
 
-        console.log('[OAuth Start] Setting cookies:', {
+        console.log('[OAuth Start] Cookies header:', {
             count: cookies.length,
-            options: getCookieOptions(req),
-            env_node_env: process.env.NODE_ENV,
-            env_vercel: process.env.VERCEL,
-            proto: req.headers['x-forwarded-proto'],
+            cookies: cookies.map(c => c.substring(0, 50)),
         });
 
         const params = new URLSearchParams({

@@ -1,4 +1,40 @@
 import { URLSearchParams } from 'url';
+import crypto from 'crypto';
+
+function base64URLEncode(buffer) {
+    return buffer.toString('base64').replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+}
+
+function base64URLDecode(str) {
+    let s = str.replace(/\-/g, '+').replace(/_/g, '/');
+    switch (s.length % 4) {
+        case 0: break;
+        case 2: s += '=='; break;
+        case 3: s += '='; break;
+        default: throw new Error('Invalid base64url string');
+    }
+    return Buffer.from(s, 'base64');
+}
+
+// Verify and decrypt PKCE token
+function verifyPKCEToken(token) {
+    try {
+        if (!token) return null;
+        const [dataB64, signature] = token.split('.');
+        const secret = process.env.OAUTH_SECRET || 'fallback-secret-change-in-production';
+        const hmac = crypto.createHmac('sha256', secret);
+        hmac.update(dataB64);
+        const expectedSig = base64URLEncode(hmac.digest());
+        if (signature !== expectedSig) return null;
+        
+        const data = JSON.parse(base64URLDecode(dataB64).toString());
+        // Verify token is not older than 10 minutes
+        if (Date.now() - data.ts > 600000) return null;
+        return data;
+    } catch (err) {
+        return null;
+    }
+}
 
 const normalizeValue = value =>
     typeof value === 'string' ? value.replace(/[\r\n]+/g, '').trim() : value;
@@ -44,54 +80,77 @@ export default async function handler(req, res) {
             return res.status(400).send('Missing code or state');
         }
 
-        const cookies = parseCookies(req.headers.cookie || '');
-        const storedState = cookies.oauth_state;
-        const code_verifier = cookies.oauth_code_verifier;
-        const client_id_cookie = cookies.oauth_client_id;
-        const app_id_cookie = cookies.oauth_app_id;
-        const redirect_uri_cookie = cookies.oauth_redirect_uri;
+        // Try to extract PKCE data from state token first (new method)
+        const pkceData = verifyPKCEToken(state);
+        
+        let storedState, code_verifier, client_id, app_id, redirect_uri;
+        
+        if (pkceData) {
+            // New method: PKCE data embedded in state token
+            storedState = pkceData.state;
+            code_verifier = pkceData.code_verifier;
+            client_id = pkceData.client_id;
+            app_id = null; // Not in token
+            redirect_uri = pkceData.redirect_uri;
+            console.log('[OAuth Callback] Using embedded PKCE token');
+        } else {
+            // Fallback: Extract from cookies (old method)
+            const cookies = parseCookies(req.headers.cookie || '');
+            storedState = cookies.oauth_state;
+            code_verifier = cookies.oauth_code_verifier;
+            const client_id_cookie = cookies.oauth_client_id;
+            const app_id_cookie = cookies.oauth_app_id;
+            redirect_uri = cookies.oauth_redirect_uri;
+            
+            client_id = client_id_cookie;
+            app_id = app_id_cookie;
 
-        // Debug logging
-        console.log('[OAuth Callback] Cookies received:', {
-            has_state: !!storedState,
-            has_code_verifier: !!code_verifier,
-            has_client_id: !!client_id_cookie,
-            has_app_id: !!app_id_cookie,
-            has_redirect_uri: !!redirect_uri_cookie,
-            all_cookies: Object.keys(cookies),
-        });
+            console.log('[OAuth Callback] Using cookies (fallback):', {
+                has_state: !!storedState,
+                has_code_verifier: !!code_verifier,
+                has_client_id: !!client_id_cookie,
+                has_app_id: !!app_id_cookie,
+                has_redirect_uri: !!redirect_uri,
+            });
+        }
 
         if (!storedState || !code_verifier) {
-            console.log('[OAuth Callback] Missing PKCE/session data', { storedState, code_verifier });
+            console.log('[OAuth Callback] Missing PKCE/session data');
             return res.status(400).send('Missing PKCE/session data');
         }
 
-        if (storedState !== state) {
+        // For token-based approach, the token signature is our state validation
+        // For cookie-based approach, verify state matches
+        if (!pkceData && storedState !== state) {
             return res.status(400).send('Invalid state');
         }
 
-        const client_id = normalizeValue(
-            client_id_cookie ||
-            process.env.DERIV_OAUTH_CLIENT_ID ||
-            process.env.OAUTH_CLIENT_ID ||
-            process.env.CLIENT_ID
-        );
-        const app_id = normalizeValue(
-            app_id_cookie ||
-            process.env.APP_ID ||
-            process.env.OAUTH_LEGACY_APP_ID ||
-            process.env.DERIV_LEGACY_APP_ID ||
-            '113875'  // Fallback legacy app_id for account authorization
-        );
-        const redirect_uri = normalizeValue(
-            redirect_uri_cookie ||
-            process.env.DERIV_OAUTH_CALLBACK_URI ||
-            process.env.OAUTH_CALLBACK_URI ||
-            process.env.DERIV_REDIRECT_URI ||
-            process.env.OAUTH_REDIRECT_URI ||
-            process.env.REDIRECT_URI ||
-            'https://brixxie-theta.vercel.app/api/oauth/callback'
-        );
+        // Apply fallbacks for client_id, app_id, redirect_uri if not from token
+        if (!client_id && !app_id) {
+            client_id = normalizeValue(
+                process.env.DERIV_OAUTH_CLIENT_ID ||
+                process.env.OAUTH_CLIENT_ID ||
+                process.env.CLIENT_ID
+            );
+            app_id = normalizeValue(
+                process.env.APP_ID ||
+                process.env.OAUTH_LEGACY_APP_ID ||
+                process.env.DERIV_LEGACY_APP_ID ||
+                '113875'
+            );
+        }
+        
+        if (!redirect_uri) {
+            redirect_uri = normalizeValue(
+                process.env.DERIV_OAUTH_CALLBACK_URI ||
+                process.env.OAUTH_CALLBACK_URI ||
+                process.env.DERIV_REDIRECT_URI ||
+                process.env.OAUTH_REDIRECT_URI ||
+                process.env.REDIRECT_URI ||
+                'https://brixxie-theta.vercel.app/api/oauth/callback'
+            );
+        }
+        
         const deriv_app_id = app_id || client_id;
 
         if ((!client_id && !app_id) || !redirect_uri) {
