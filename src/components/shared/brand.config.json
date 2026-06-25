@@ -84,6 +84,6 @@
         "callback_uri": "https://pawatrader.vercel.app/callback",
         "client_id": "33Ewt49lIGOqAsySdsUsG",
         "app_id": "",
-        "scope": "trade+account_manage"
+        "scope": "trade"
     }
 }
