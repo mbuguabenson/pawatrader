@@ -16,12 +16,14 @@ const normalizeValue = value =>
     typeof value === 'string' ? value.replace(/[\r\n]+/g, '').trim() : value;
 
 const getCookieOptions = req => {
+    // On Vercel/production, always use secure cross-site cookies for OAuth flow
+    const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
     const forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
-    const isSecureRequest = forwardedProto === 'https' || forwardedProto === 'wss' || Boolean(req.socket?.encrypted);
-    const secure = isSecureRequest || process.env.NODE_ENV === 'production';
-    const cookieOpts = [`HttpOnly`, `Path=/`];
+    const secure = isProduction || forwardedProto === 'https';
     
-    // For OAuth redirects, use SameSite=None with Secure flag
+    const cookieOpts = [`HttpOnly`, `Path=/`, `Max-Age=600`];
+    
+    // For OAuth cross-origin redirects, always use SameSite=None with Secure
     if (secure) {
         cookieOpts.push('SameSite=None', 'Secure');
     } else {
@@ -79,22 +81,30 @@ export default async function handler(req, res) {
         const useAppId = !useClientId && Boolean(app_id);
 
         const cookies = [
-            `oauth_code_verifier=${encodeURIComponent(code_verifier)}; ${cookieOpts.join('; ')}; Max-Age=600`,
-            `oauth_state=${encodeURIComponent(state)}; ${cookieOpts.join('; ')}; Max-Age=600`,
-            `oauth_redirect_uri=${encodeURIComponent(redirect_uri)}; ${cookieOpts.join('; ')}; Max-Age=600`,
+            `oauth_code_verifier=${encodeURIComponent(code_verifier)}; ${cookieOpts.join('; ')}`,
+            `oauth_state=${encodeURIComponent(state)}; ${cookieOpts.join('; ')}`,
+            `oauth_redirect_uri=${encodeURIComponent(redirect_uri)}; ${cookieOpts.join('; ')}`,
         ];
 
         if (useClientId) {
-            cookies.push(`oauth_client_id=${encodeURIComponent(client_id)}; ${cookieOpts.join('; ')}; Max-Age=600`);
+            cookies.push(`oauth_client_id=${encodeURIComponent(client_id)}; ${cookieOpts.join('; ')}`);
         } else if (useAppId) {
-            cookies.push(`oauth_app_id=${encodeURIComponent(app_id)}; ${cookieOpts.join('; ')}; Max-Age=600`);
+            cookies.push(`oauth_app_id=${encodeURIComponent(app_id)}; ${cookieOpts.join('; ')}`);
         }
 
         if (preferred_account) {
-            cookies.push(`oauth_preferred_account=${encodeURIComponent(preferred_account)}; ${cookieOpts.join('; ')}; Max-Age=600`);
+            cookies.push(`oauth_preferred_account=${encodeURIComponent(preferred_account)}; ${cookieOpts.join('; ')}`);
         }
 
         res.setHeader('Set-Cookie', cookies);
+
+        console.log('[OAuth Start] Setting cookies:', {
+            count: cookies.length,
+            options: getCookieOptions(req),
+            env_node_env: process.env.NODE_ENV,
+            env_vercel: process.env.VERCEL,
+            proto: req.headers['x-forwarded-proto'],
+        });
 
         const params = new URLSearchParams({
             response_type: 'code',

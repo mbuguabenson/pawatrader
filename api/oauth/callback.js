@@ -16,12 +16,14 @@ function parseCookies(cookieHeader) {
 }
 
 const getCookieOptions = req => {
+    // On Vercel/production, always use secure cross-site cookies for OAuth flow
+    const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
     const forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
-    const isSecureRequest = forwardedProto === 'https' || forwardedProto === 'wss' || Boolean(req.socket?.encrypted);
-    const secure = isSecureRequest || process.env.NODE_ENV === 'production';
+    const secure = isProduction || forwardedProto === 'https';
+    
     const cookieOpts = [`HttpOnly`, `Path=/`];
     
-    // For OAuth redirects, use SameSite=None with Secure flag
+    // For OAuth cross-origin redirects, always use SameSite=None with Secure
     if (secure) {
         cookieOpts.push('SameSite=None', 'Secure');
     } else {
@@ -49,7 +51,18 @@ export default async function handler(req, res) {
         const app_id_cookie = cookies.oauth_app_id;
         const redirect_uri_cookie = cookies.oauth_redirect_uri;
 
+        // Debug logging
+        console.log('[OAuth Callback] Cookies received:', {
+            has_state: !!storedState,
+            has_code_verifier: !!code_verifier,
+            has_client_id: !!client_id_cookie,
+            has_app_id: !!app_id_cookie,
+            has_redirect_uri: !!redirect_uri_cookie,
+            all_cookies: Object.keys(cookies),
+        });
+
         if (!storedState || !code_verifier) {
+            console.log('[OAuth Callback] Missing PKCE/session data', { storedState, code_verifier });
             return res.status(400).send('Missing PKCE/session data');
         }
 
