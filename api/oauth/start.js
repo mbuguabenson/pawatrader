@@ -19,13 +19,13 @@ const getCookieOptions = req => {
     const forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
     const isSecureRequest = forwardedProto === 'https' || forwardedProto === 'wss' || Boolean(req.socket?.encrypted);
     const secure = isSecureRequest || process.env.NODE_ENV === 'production';
-    const cookieOpts = [`HttpOnly`, `Path=/`, `SameSite=${secure ? 'None' : 'Lax'}`];
-    if (secure) cookieOpts.push('Secure');
-
-    const hostHeader = String(req.headers.host || '');
-    const hostname = hostHeader.split(':')[0].toLowerCase();
-    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !/^[0-9.]+$/.test(hostname)) {
-        cookieOpts.push(`Domain=${hostname}`);
+    const cookieOpts = [`HttpOnly`, `Path=/`];
+    
+    // For OAuth redirects, use SameSite=None with Secure flag
+    if (secure) {
+        cookieOpts.push('SameSite=None', 'Secure');
+    } else {
+        cookieOpts.push('SameSite=Lax');
     }
 
     return cookieOpts;
