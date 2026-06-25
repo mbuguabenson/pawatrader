@@ -1,4 +1,5 @@
-import { URLSearchParams } from 'url';
+const normalizeValue = value =>
+    typeof value === 'string' ? value.replace(/[\r\n]+/g, '').trim() : value;
 
 function parseCookies(cookieHeader) {
     const list = {};
@@ -7,7 +8,7 @@ function parseCookies(cookieHeader) {
         const parts = cookie.split('=');
         const key = parts.shift().trim();
         const value = parts.join('=');
-        list[key] = decodeURIComponent(value);
+        list[key] = normalizeValue(decodeURIComponent(value));
     });
     return list;
 }
@@ -20,7 +21,12 @@ export default async function handler(req, res) {
     try {
         const cookies = parseCookies(req.headers.cookie || '');
         const access_token = cookies.deriv_access_token;
-        const app_id = cookies.deriv_app_id || process.env.DERIV_LEGACY_APP_ID;
+        const app_id = normalizeValue(
+            cookies.deriv_app_id ||
+            process.env.APP_ID ||
+            process.env.OAUTH_LEGACY_APP_ID ||
+            process.env.DERIV_LEGACY_APP_ID
+        );
         const stored_selected_loginid = cookies.deriv_selected_loginid;
 
         if (!access_token) {

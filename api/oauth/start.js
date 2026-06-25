@@ -12,6 +12,9 @@ function randomString(length = 64) {
     return base64URLEncode(crypto.randomBytes(length));
 }
 
+const normalizeValue = value =>
+    typeof value === 'string' ? value.replace(/[\r\n]+/g, '').trim() : value;
+
 export default async function handler(req, res) {
     // Only GET supported: redirect to the Deriv authorization endpoint
     if (req.method !== 'GET') {
@@ -22,17 +25,24 @@ export default async function handler(req, res) {
         const query = req.query || {};
 
         // Use client_id passed as query or fallback to env var
-        const client_id =
+        const client_id = normalizeValue(
             query.client_id ||
             process.env.DERIV_OAUTH_CLIENT_ID ||
             process.env.OAUTH_CLIENT_ID ||
-            process.env.CLIENT_ID;
-        const app_id =
+            process.env.CLIENT_ID
+        );
+        const app_id = normalizeValue(
             query.app_id ||
             process.env.APP_ID ||
             process.env.OAUTH_LEGACY_APP_ID ||
-            process.env.DERIV_LEGACY_APP_ID;
-        const redirect_uri = query.redirect_uri || process.env.DERIV_REDIRECT_URI || process.env.OAUTH_REDIRECT_URI || process.env.REDIRECT_URI;
+            process.env.DERIV_LEGACY_APP_ID
+        );
+        const redirect_uri = normalizeValue(
+            query.redirect_uri ||
+            process.env.DERIV_REDIRECT_URI ||
+            process.env.OAUTH_REDIRECT_URI ||
+            process.env.REDIRECT_URI
+        );
 
         if ((!client_id && !app_id) || !redirect_uri) {
             return res.status(500).json({ error: 'Missing server configuration for client_id or app_id, or redirect_uri' });
@@ -80,13 +90,26 @@ export default async function handler(req, res) {
 
         if (client_id) {
             params.set('client_id', client_id);
-        }
-        if (app_id) {
+        } else if (app_id) {
             params.set('app_id', app_id);
         }
 
         Object.entries(query).forEach(([key, value]) => {
-            if (!['client_id', 'redirect_uri', 'account', 'preferred_account'].includes(key) && value) {
+            if (
+                ![
+                    'client_id',
+                    'app_id',
+                    'redirect_uri',
+                    'scope',
+                    'state',
+                    'code_challenge',
+                    'code_challenge_method',
+                    'response_type',
+                    'account',
+                    'preferred_account',
+                ].includes(key) &&
+                value
+            ) {
                 params.set(key, String(value));
             }
         });

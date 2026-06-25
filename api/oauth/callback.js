@@ -1,5 +1,8 @@
 import { URLSearchParams } from 'url';
 
+const normalizeValue = value =>
+    typeof value === 'string' ? value.replace(/[\r\n]+/g, '').trim() : value;
+
 function parseCookies(cookieHeader) {
     const list = {};
     if (!cookieHeader) return list;
@@ -7,7 +10,7 @@ function parseCookies(cookieHeader) {
         const parts = cookie.split('=');
         const key = parts.shift().trim();
         const value = parts.join('=');
-        list[key] = decodeURIComponent(value);
+        list[key] = normalizeValue(decodeURIComponent(value));
     });
     return list;
 }
@@ -38,34 +41,44 @@ export default async function handler(req, res) {
             return res.status(400).send('Invalid state');
         }
 
-        const client_id =
+        const client_id = normalizeValue(
             client_id_cookie ||
             process.env.DERIV_OAUTH_CLIENT_ID ||
             process.env.OAUTH_CLIENT_ID ||
-            process.env.CLIENT_ID ||
+            process.env.CLIENT_ID
+        );
+        const app_id = normalizeValue(
             app_id_cookie ||
             process.env.APP_ID ||
             process.env.OAUTH_LEGACY_APP_ID ||
-            process.env.DERIV_LEGACY_APP_ID;
-        const redirect_uri =
+            process.env.DERIV_LEGACY_APP_ID
+        );
+        const redirect_uri = normalizeValue(
             redirect_uri_cookie ||
             process.env.DERIV_OAUTH_CALLBACK_URI ||
             process.env.OAUTH_CALLBACK_URI ||
             process.env.DERIV_REDIRECT_URI ||
             process.env.OAUTH_REDIRECT_URI ||
-            process.env.REDIRECT_URI;
+            process.env.REDIRECT_URI
+        );
 
-        if (!client_id || !redirect_uri) {
+        if ((!client_id && !app_id) || !redirect_uri) {
             return res.status(500).send('Server not configured for OAuth');
         }
 
         const params = new URLSearchParams({
             grant_type: 'authorization_code',
             code,
-            client_id,
             redirect_uri,
             code_verifier,
         });
+
+        if (client_id) {
+            params.set('client_id', client_id);
+        }
+        if (app_id) {
+            params.set('app_id', app_id);
+        }
 
         const tokenResp = await fetch('https://auth.deriv.com/oauth2/token', {
             method: 'POST',
@@ -98,7 +111,6 @@ export default async function handler(req, res) {
                 `deriv_refresh_token=${encodeURIComponent(tokenData.refresh_token)}; ${cookieOpts.join('; ')}; Max-Age=604800`
             );
 
-        const app_id = process.env.DERIV_LEGACY_APP_ID;
         if (app_id) {
             setCookies.push(`deriv_app_id=${encodeURIComponent(app_id)}; ${cookieOpts.join('; ')}`);
         }
