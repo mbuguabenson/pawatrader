@@ -1,0 +1,353 @@
+.community-modal-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 99999 !important; // Very high z-index
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.6rem;
+    animation: fadeIn 0.3s ease-out;
+    pointer-events: auto;
+    filter: none !important; // Overlay itself is not blurred
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    isolation: isolate; // Create new stacking context
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.community-modal {
+    background: #1f2937 !important; // Dark blue/navy background
+    border-radius: 1.2rem;
+    max-width: 500px;
+    width: 100%;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.3s ease-out;
+    overflow: hidden;
+    filter: none !important; // Ensure modal itself is not blurred
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    isolation: isolate; // Create new stacking context
+    transform: translateZ(0); // Force hardware acceleration
+    will-change: transform;
+    z-index: 100000 !important; // Even higher z-index
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.community-modal__close {
+    position: absolute;
+    top: 1.2rem;
+    right: 1.2rem;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 10;
+
+    &:hover {
+        background: rgba(255, 255, 255, 0.1);
+        color: #ffffff;
+    }
+
+    svg {
+        width: 20px;
+        height: 20px;
+    }
+}
+
+.community-modal__header {
+    padding: 2.4rem 2.4rem 1.6rem;
+    text-align: center;
+}
+
+.community-modal__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.2rem;
+
+    &.rocket-icon {
+        color: #ef4444; // Red rocket icon
+    }
+
+    &.speech-icon {
+        color: #ffffff;
+        margin-right: 0.8rem;
+        flex-shrink: 0;
+    }
+
+    svg {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+.community-modal__title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 0.8rem 0;
+    font-family:
+        Arial,
+        Helvetica,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
+}
+
+.community-modal__subtitle {
+    font-size: 1rem;
+    color: #d1d5db;
+    margin: 0;
+    font-family:
+        Arial,
+        Helvetica,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
+}
+
+.community-modal__content {
+    padding: 0 2.4rem 2.4rem;
+}
+
+.community-modal__message {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 2rem;
+    padding: 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 0.8rem;
+
+    p {
+        color: #ffffff;
+        font-size: 1rem;
+        line-height: 1.6;
+        margin: 0;
+        font-family:
+            Arial,
+            Helvetica,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            sans-serif;
+    }
+}
+
+.community-modal__actions {
+    display: flex;
+    gap: 1.2rem;
+    margin-bottom: 1.6rem;
+
+    @media (max-width: 480px) {
+        flex-direction: column;
+    }
+}
+
+.community-modal__button {
+    flex: 1;
+    padding: 1.2rem 2rem;
+    border: none;
+    border-radius: 0.8rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffffff;
+    text-decoration: none;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family:
+        Arial,
+        Helvetica,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
+    display: inline-block;
+
+    &--whatsapp {
+        background: #28a745; // Green
+        &:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+    }
+
+    &--telegram {
+        background: #0088cc; // Telegram brand color
+        &:hover {
+            background: #0077b5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 136, 204, 0.4);
+        }
+    }
+
+    &--youtube {
+        background: #ff0000; // YouTube brand color
+        &:hover {
+            background: #cc0000;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 0, 0, 0.4);
+        }
+    }
+
+    &--no-thanks {
+        background: #dc3545; // Red
+        &:hover {
+            background: #c82333;
+        }
+    }
+
+    &--maybe-later {
+        background: #28a745; // Green
+        &:hover {
+            background: #218838;
+        }
+    }
+}
+
+.community-modal__info {
+    text-align: center;
+    margin-bottom: 1.6rem;
+    padding: 1.2rem;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 0.8rem;
+
+    p {
+        color: #ffffff;
+        font-size: 0.9rem;
+        margin: 0 0 0.8rem 0;
+        font-family:
+            Arial,
+            Helvetica,
+            -apple-system,
+            BlinkMacSystemFont,
+            'Segoe UI',
+            sans-serif;
+    }
+}
+
+.community-modal__links {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    align-items: center;
+}
+
+.community-modal__link {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: color 0.2s ease;
+    font-family:
+        Arial,
+        Helvetica,
+        -apple-system,
+        BlinkMacSystemFont,
+        'Segoe UI',
+        sans-serif;
+
+    &:hover {
+        color: #0056b3;
+        text-decoration: underline;
+    }
+}
+
+.community-modal__footer {
+    display: flex;
+    gap: 1.2rem;
+
+    @media (max-width: 480px) {
+        flex-direction: column;
+    }
+
+    .community-modal__button {
+        flex: 1;
+        padding: 0.8rem 1.6rem;
+        font-size: 0.9rem;
+    }
+}
+
+// Blur effect for background content only (not the modal)
+body.community-modal-open {
+    overflow: hidden;
+}
+
+// Blur the root and all its children (modal is now outside #root via portal)
+body.community-modal-open #root {
+    filter: blur(4px) !important;
+    pointer-events: none;
+    transition: filter 0.3s ease;
+    position: relative;
+}
+
+// Blur all direct children of root
+body.community-modal-open #root > * {
+    filter: blur(4px) !important;
+    pointer-events: none;
+}
+
+// Overlay - blur the background behind it, but overlay itself is NOT blurred
+.community-modal-overlay {
+    filter: none !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    pointer-events: auto !important;
+}
+
+// Modal itself - absolutely no blur on modal or any of its children
+.community-modal,
+.community-modal *,
+.community-modal *::before,
+.community-modal *::after {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    -webkit-transform: translateZ(0) !important;
+    transform: translateZ(0) !important;
+    will-change: transform;
+}
+
+// Additional override to ensure modal is never blurred
+body.community-modal-open .community-modal-overlay {
+    filter: none !important;
+}
+
+body.community-modal-open .community-modal,
+body.community-modal-open .community-modal * {
+    filter: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+}

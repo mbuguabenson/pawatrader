@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en" dir="auto">
+    <head>
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/assets/images/trading-hub-logo.svg" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+        <!-- Primary Meta Tags -->
+        <meta name="title" content="Trading Hub - Professional Trading Bot Builder & Copy Trading Platform" />
+        <meta
+            name="description"
+            content="Experience a domain-branded trading hub with professional bot building, strategies, and automated trading tools."
+        />
+        <meta
+            name="keywords"
+            content="trading hub, trading bot builder, copy trading, automated trading, trading strategies, financial automation"
+        />
+        <meta name="author" content="Trading Hub" />
+        <meta name="robots" content="index, follow" />
+        <meta name="language" content="English" />
+        <meta name="revisit-after" content="7 days" />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://example.com/" />
+        <meta property="og:title" content="Trading Hub - Professional Trading Bot Builder" />
+        <meta
+            property="og:description"
+            content="A domain-branded trading hub for professional bot builders, copy trading, and advanced trading strategies."
+        />
+        <meta property="og:image" content="/assets/images/trading-hub-logo.svg" />
+        <meta property="og:site_name" content="Trading Hub" />
+        <meta property="og:locale" content="en_US" />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://example.com/" />
+        <meta property="twitter:title" content="Trading Hub - Professional Trading Bot Builder" />
+        <meta
+            property="twitter:description"
+            content="A domain-branded trading hub for professional bot builders, copy trading, and advanced trading strategies."
+        />
+        <meta property="twitter:image" content="/assets/images/trading-hub-logo.svg" />
+
+        <!-- Additional SEO Meta Tags -->
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="msapplication-TileColor" content="#ffffff" />
+        <meta name="application-name" content="Trading Hub" />
+
+        <title>Trading Hub - Professional Trading Bot Builder & Copy Trading Platform</title>
+
+        <!-- Structured Data -->
+        <script type="application/ld+json" id="domain-brand-jsonld">
+            {
+                "@context": "https://schema.org",
+                "@type": "WebApplication",
+                "name": "Trading Hub",
+                "description": "Professional trading bot builder and copy trading platform.",
+                "url": "https://example.com",
+                "applicationCategory": "FinanceApplication",
+                "operatingSystem": "Web Browser",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                },
+                "creator": {
+                    "@type": "Organization",
+                    "name": "Trading Hub"
+                },
+                "featureList": [
+                    "Trading Bot Builder",
+                    "Copy Trading",
+                    "Free Trading Bots",
+                    "Advanced Strategies",
+                    "No Coding Required"
+                ]
+            }
+        </script>
+
+        <script>
+            (function () {
+                const host = window.location.hostname
+                    .toLowerCase()
+                    .split(':')[0]
+                    .replace(/^www\./, '');
+                const parts = host.split('.');
+                let base = parts.length > 2 ? parts[parts.length - 2] : parts[0];
+                if (!base || base === 'localhost') {
+                    base = 'Trading Hub';
+                }
+                base = base
+                    .replace(/hub$/i, '')
+                    .replace(/[^a-z0-9]+/g, ' ')
+                    .trim();
+                const format = base
+                    .split(/\s+/)
+                    .filter(Boolean)
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' ');
+                const brandName = format || 'Trading Hub';
+                const brandLabel = `${brandName} Trading Hub`;
+                const siteUrl = window.location.origin;
+                const pageTitle = `${brandLabel} - Professional Trading Bot Builder & Copy Trading Platform`;
+                const description = `Visit ${brandLabel} at ${window.location.hostname} for professional trading bots, copy trading, and advanced automated strategies.`;
+                const image = '/assets/images/trading-hub-logo.svg';
+
+                document.title = pageTitle;
+                const setMeta = (selector, value) => {
+                    const element = document.querySelector(selector);
+                    if (element) element.setAttribute('content', value);
+                };
+
+                setMeta('meta[name="title"]', pageTitle);
+                setMeta('meta[name="description"]', description);
+                setMeta(
+                    'meta[name="keywords"]',
+                    `trading hub, ${brandName.toLowerCase()}, trading bots, automated trading, trading strategies`
+                );
+                setMeta('meta[name="author"]', brandLabel);
+                setMeta('meta[name="application-name"]', brandLabel);
+
+                setMeta('meta[property="og:url"]', siteUrl + '/');
+                setMeta('meta[property="og:title"]', pageTitle);
+                setMeta('meta[property="og:description"]', description);
+                setMeta('meta[property="og:image"]', image);
+                setMeta('meta[property="og:site_name"]', brandLabel);
+
+                setMeta('meta[property="twitter:url"]', siteUrl + '/');
+                setMeta('meta[property="twitter:title"]', pageTitle);
+                setMeta('meta[property="twitter:description"]', description);
+                setMeta('meta[property="twitter:image"]', image);
+
+                const icon = document.querySelector('link[rel="icon"]');
+                if (icon) icon.setAttribute('href', image);
+
+                const schemaScript = document.getElementById('domain-brand-jsonld');
+                if (schemaScript) {
+                    try {
+                        const schema = JSON.parse(schemaScript.textContent || '{}');
+                        schema.name = brandLabel;
+                        schema.description = description;
+                        schema.url = siteUrl;
+                        schema.creator = { '@type': 'Organization', name: brandLabel };
+                        schemaScript.textContent = JSON.stringify(schema);
+                    } catch (e) {
+                        console.warn('Could not update schema metadata', e);
+                    }
+                }
+            })();
+        </script>
+        <style>
+            :root {
+                font-size: 62.5%;
+            }
+        </style>
+        <!-- Security Protection Script -->
+        <script>
+            (function () {
+                'use strict';
+
+                // Check if mobile device
+                const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                    navigator.userAgent
+                );
+
+                // DevTools access enabled for development debugging
+            })();
+        </script>
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function () {
+                    navigator.serviceWorker.register('/service-worker.js').catch(function (err) {
+                        console.warn('SW registration failed', err);
+                    });
+                });
+            }
+        </script>
+    </head>
+
+    <body class="body theme theme--light">
+        <div id="modal_root" class="modal-root"></div>
+        <div id="popup_root" class="popup-root"></div>
+        <div id="root"></div>
+        <!-- LiveChat script -->
+        <script type="text/javascript" defer>
+            window.__lc = window.__lc || {};
+            window.__lc.license = 12049137;
+            window.__lc.asyncInit = true;
+            (function (n, t, c) {
+                function i(n) {
+                    return e._h ? e._h.apply(null, n) : e._q.push(n);
+                }
+                var e = {
+                    _q: [],
+                    _h: null,
+                    _v: '2.0',
+                    on: function () {
+                        i(['on', c.call(arguments)]);
+                    },
+                    once: function () {
+                        i(['once', c.call(arguments)]);
+                    },
+                    off: function () {
+                        i(['off', c.call(arguments)]);
+                    },
+                    get: function () {
+                        if (!e._h) throw new Error('[LiveChatWidget] You can’t use getters before load.');
+                        return i(['get', c.call(arguments)]);
+                    },
+                    call: function () {
+                        i(['call', c.call(arguments)]);
+                    },
+                    init: function () {
+                        setTimeout(() => {
+                            var n = t.createElement('script');
+                            ((n.async = !0),
+                                (n.type = 'text/javascript'),
+                                (n.src = 'https://cdn.livechatinc.com/tracking.js'),
+                                t.head.appendChild(n));
+                        }, 3000);
+                    },
+                };
+                (!n.__lc.asyncInit && e.init(), (n.LiveChatWidget = n.LiveChatWidget || e));
+            })(window, document, [].slice);
+        </script>
+        <!-- End LiveChat script -->
+    </body>
+</html>

@@ -1,0 +1,309 @@
+.mobile-menu {
+    height: 100%;
+
+    &__toggle {
+        padding-inline-start: 1rem;
+        padding-inline-end: 1rem;
+        border-inline-end: 1px solid var(--general-section-1);
+        display: flex;
+        height: 100%;
+        cursor: pointer;
+    }
+
+    &__footer {
+        justify-content: center;
+        height: 4rem;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+
+        // G Button styles for mobile menu footer
+        .app-footer__g-button {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: 50%;
+
+            .app-footer__g-button-dot {
+                width: 1rem;
+                height: 1rem;
+            }
+        }
+    }
+
+    &__header {
+        display: flex;
+        padding-inline-end: 1.6rem;
+        padding-inline-start: 0.4rem;
+        justify-content: space-between;
+        align-items: center;
+        width: 100%;
+
+        &__language {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+    }
+
+    &__content {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+
+        &__platform {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid var(--general-section-1);
+            min-height: 7rem;
+            cursor: pointer;
+        }
+
+        .deriv-context-menu {
+            box-shadow: none !important;
+        }
+
+        &__items {
+            position: relative;
+            height: 100%;
+            padding-top: 1rem;
+
+            &--padding {
+                padding-inline-start: 4.8rem;
+                padding-inline-end: 1.6rem;
+            }
+
+            &--bottom-border {
+                border-bottom: 1px solid var(--general-section-1);
+            }
+
+            &__item {
+                height: 5.6rem;
+                cursor: pointer;
+                width: 100%;
+
+                .deriv-toggle-switch {
+                    margin-left: auto;
+                    margin-right: 1.6rem;
+                }
+
+                &--active {
+                    .deriv-text {
+                        color: var(--text-prominent);
+                        font-weight: bold;
+                    }
+                }
+            }
+
+            &--right-margin {
+                margin-inline-end: 1.6rem;
+            }
+
+            &--chevron {
+                position: absolute;
+                right: 1.5rem;
+            }
+
+            &__icons {
+                g > path,
+                path {
+                    fill: var(--text-prominent);
+                }
+            }
+        }
+    }
+
+    &__language-drawer {
+        padding-inline-start: 0.8rem;
+        padding-inline-end: 0.8rem;
+
+        button {
+            height: auto;
+        }
+
+        .languages-modal__body-button {
+            height: 88px;
+            width: 133px;
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            padding: 8px;
+
+            .deriv-text {
+                color: var(--text-prominent) !important;
+            }
+
+            &-selected {
+                border: 1px solid var(--brand-blue, var(--brand-secondary));
+                border-radius: 4px;
+            }
+        }
+    }
+
+    &__back-btn {
+        display: flex;
+        align-items: center;
+        padding: 3.2rem;
+        padding-top: 2rem;
+        cursor: pointer;
+
+        span {
+            margin-inline-start: 1.6rem;
+        }
+    }
+
+    // Admin form styles
+    &__admin-form {
+        padding: 2rem;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+
+        &__header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--general-section-1);
+
+            h3 {
+                margin: 0;
+                font-size: 1.8rem;
+                font-weight: 600;
+                color: var(--text-prominent);
+            }
+
+            &__close {
+                background: none;
+                border: none;
+                font-size: 2rem;
+                cursor: pointer;
+                color: var(--text-prominent);
+                padding: 0.5rem;
+                line-height: 1;
+
+                &:hover {
+                    color: var(--text-less-prominent);
+                }
+            }
+        }
+
+        &__content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        &__field {
+            margin-bottom: 2rem;
+        }
+
+        &__label {
+            display: block;
+            margin-bottom: 0.8rem;
+            font-weight: 600;
+            color: var(--text-prominent);
+            font-size: 1.4rem;
+        }
+
+        &__input {
+            width: 100%;
+            padding: 1.2rem;
+            border: 1px solid var(--general-section-1);
+            border-radius: 0.4rem;
+            background-color: var(--general-main-1);
+            color: var(--text-prominent);
+            font-size: 1.4rem;
+
+            &:focus {
+                outline: none;
+                border-color: var(--button-primary-default);
+                box-shadow: 0 0 0 2px rgba(var(--button-primary-default-rgb), 0.2);
+            }
+
+            &::placeholder {
+                color: var(--text-less-prominent);
+            }
+        }
+
+        &__error {
+            margin-top: 0.8rem;
+            color: var(--status-danger);
+            font-size: 1.2rem;
+            font-weight: 500;
+        }
+
+        &__buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: auto;
+            padding-top: 2rem;
+        }
+
+        &__button {
+            flex: 1;
+            padding: 1.2rem;
+            border-radius: 0.4rem;
+            font-size: 1.4rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+
+            &--primary {
+                background-color: var(--button-primary-default);
+                color: var(--text-colored-background);
+                border-color: var(--button-primary-default);
+
+                &:hover:not(:disabled) {
+                    background-color: var(--button-primary-hover);
+                }
+
+                &:active:not(:disabled) {
+                    background-color: var(--button-primary-active);
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
+
+            &--secondary {
+                background-color: var(--general-main-1);
+                color: var(--text-prominent);
+                border-color: var(--general-section-1);
+
+                &:hover:not(:disabled) {
+                    background-color: var(--general-section-1);
+                }
+
+                &:active:not(:disabled) {
+                    background-color: var(--general-section-2);
+                }
+
+                &:disabled {
+                    opacity: 0.5;
+                    cursor: not-allowed;
+                }
+            }
+        }
+    }
+
+    .deriv-drawer__container {
+        background: var(--general-main-1);
+    }
+
+    &__toggle,
+    &__back-btn,
+    .deriv-drawer__header__close-btn {
+        button > svg > path,
+        svg > path {
+            fill: var(--text-prominent);
+        }
+    }
+}

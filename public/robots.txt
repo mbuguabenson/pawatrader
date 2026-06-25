@@ -1,0 +1,34 @@
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://derivinsider.site/sitemap.xml
+
+# Crawl-delay for respectful crawling
+Crawl-delay: 1
+
+# Disallow admin or private areas (if any)
+Disallow: /admin/
+Disallow: /private/
+Disallow: /api/
+
+# Allow important pages
+Allow: /dashboard
+Allow: /bot-builder
+Allow: /copy-trading
+Allow: /free-bots
+Allow: /tutorials
+
+
+
+
+
+
+
+
+
+
+
+
+
+

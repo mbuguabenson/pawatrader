@@ -1,0 +1,152 @@
+.risk-disclaimer-button {
+    position: fixed;
+    z-index: 1000;
+    animation: slide-in-left 0.5s ease-out;
+    touch-action: none;
+    cursor: grab;
+
+    &__btn {
+        background: #1f6feb !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 8px 16px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.3s ease !important;
+
+        &:hover {
+            background: #1957d6 !important;
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        &:active {
+            transform: translateY(0) !important;
+        }
+    }
+}
+
+.risk-disclaimer-modal {
+    &__content {
+        padding: 24px;
+    }
+
+    &__title {
+        margin-bottom: 20px;
+        text-align: center;
+        color: var(--brand-red-coral);
+    }
+
+    &__text {
+        line-height: 1.8;
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    &__points {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+
+    &__point {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+
+        span {
+            color: var(--brand-red-coral);
+            font-weight: bold;
+            line-height: 1.4;
+            margin-top: 2px;
+        }
+    }
+
+    &__footer {
+        display: block;
+        margin-bottom: 24px;
+        line-height: 1.7;
+    }
+
+    &__actions {
+        display: flex;
+        justify-content: center;
+        gap: 16px;
+        margin-top: 24px;
+        flex-wrap: wrap;
+    }
+
+    &__understand-btn {
+        background: #1f6feb !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 12px 32px !important;
+        border-radius: 4px !important;
+        font-weight: 600 !important;
+        min-width: 150px;
+
+        &:hover {
+            background: #1957d6 !important;
+        }
+    }
+
+    &__dont-show-btn {
+        background: #d64545 !important;
+        color: #ffffff !important;
+        border: none !important;
+        padding: 12px 32px !important;
+        border-radius: 4px !important;
+        font-weight: 600 !important;
+        min-width: 150px;
+
+        &:hover {
+            background: #b63232 !important;
+        }
+    }
+}
+
+// Mobile optimizations
+@media (max-width: 768px) {
+    .risk-disclaimer-button {
+        z-index: 1001; // Ensure it stays above content
+
+        &__btn {
+            font-size: 11px !important;
+            padding: 6px 12px !important;
+        }
+    }
+
+    .risk-disclaimer-modal {
+        &__content {
+            padding: 20px;
+        }
+
+        &__title {
+            font-size: 16px;
+        }
+
+        &__text {
+            font-size: 13px;
+        }
+
+        &__understand-btn {
+            padding: 10px 24px !important;
+            font-size: 13px !important;
+        }
+    }
+}
+
+// Animation for floating button
+@keyframes slide-in-left {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

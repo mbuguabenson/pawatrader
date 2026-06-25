@@ -1,0 +1,697 @@
+@use 'components/shared/styles/constants' as *;
+@use 'components/shared/styles/mixins' as *;
+
+.app-header {
+    background-color: #f5f5f5 !important; // Light grey like Binarytool
+    border-bottom: 1px solid #e0e0e0; // Light grey border
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible; // Allow dropdowns (account switcher) to show
+    display: flex; // Ensure flex layout
+    align-items: center; // Center items vertically
+    justify-content: space-between; // Space between left and right sections
+
+    // Ensure proper spacing on mobile
+    @include mobile-or-tablet-screen {
+        padding: 0 0.8rem !important; // Add horizontal padding to prevent squeezing on actual mobile devices
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        width: 100%;
+        flex-wrap: nowrap;
+
+        // Target Wrapper components more specifically
+        > * {
+            min-width: 0; // Allow flex items to shrink
+            flex-shrink: 1; // Allow shrinking if needed
+        }
+
+        // Keep the left-side branding content from overflowing too far across the screen
+        > *:first-child {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex: 1 1 50%;
+            max-width: 50%;
+            min-width: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        // Keep the right-side account area pinned to the right
+        > *:last-child {
+            min-width: 0;
+            margin-left: auto;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            flex: 0 1 50%;
+            max-width: 50%;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+    }
+
+    &__account-settings {
+        padding-inline-end: 1.2rem;
+        border-inline-end: 0.1rem solid var(--general-section-1);
+    }
+
+    &__account-settings,
+    .notifications__wrapper,
+    &__menu {
+        svg > path,
+        svg > g > path {
+            fill: var(--text-prominent);
+        }
+    }
+
+    // Powered by brand pill in header
+    .powered-by-deriv-header {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        position: relative;
+        background-color: rgba(245, 245, 245, 0.96);
+        color: #334155; // Dark grey text
+        flex-shrink: 0; // Prevent shrinking on mobile
+        min-width: 0; // Allow flex items to shrink if needed
+        border: 1px solid rgba(30, 58, 138, 0.08);
+        box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
+        backdrop-filter: blur(6px);
+        max-width: min(100%, 55vw);
+        animation: headerPulse 8s ease-in-out infinite;
+
+        @include mobile-or-tablet-screen {
+            padding: 0.4rem 0.8rem; // Reduce padding on mobile to prevent squeezing
+            gap: 0.1875rem;
+            flex: 1 1 auto;
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+        }
+
+        &__logo {
+            width: 2.4rem;
+            height: 2.4rem;
+            border-radius: 0.6rem;
+            object-fit: cover;
+            box-shadow: 0 2px 6px rgb(0 0 0 / 20%);
+            border: 1px solid var(--general-section-2);
+            flex-shrink: 0;
+
+            @include mobile-or-tablet-screen {
+                width: 2rem;
+                height: 2rem;
+            }
+        }
+
+        &__text {
+            display: flex;
+            flex-direction: column; // Stack vertically: brand on top, powered by line below
+            align-items: flex-start; // Align to left
+            gap: 0.08rem; // Small gap between lines
+            line-height: 1.1;
+            flex-shrink: 1; // Allow text to shrink slightly if needed
+            min-width: 0; // Allow text to shrink
+            max-width: 50vw;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+
+            @include mobile-or-tablet-screen {
+                max-width: calc(100% - 3.4rem);
+                gap: 0.05rem; // Even smaller gap on mobile
+                line-height: 1.05;
+            }
+        }
+
+        &__label {
+            font-size: 0.75rem; // Smaller font for "POWERED BY DERIV" (second line)
+            color: #6b7280; // Light grey for "POWERED BY DERIV"
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1; // Allow to shrink if needed
+            line-height: 1;
+
+            @include mobile-or-tablet-screen {
+                display: none;
+            }
+        }
+
+        .deriv-word {
+            font-size: 1rem; // Main text brand title
+            font-weight: 800;
+            color: transparent;
+            background: linear-gradient(90deg, #16a34a, #22d3ee, #2563eb, #f59e0b);
+            background-clip: text;
+            -webkit-background-clip: text;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex-shrink: 1; // Allow to shrink if needed
+            line-height: 1.1;
+            animation: headerGlow 4s ease-in-out infinite alternate;
+
+            @include mobile-or-tablet-screen {
+                font-size: 0.85rem; // Slightly smaller on mobile
+            }
+        }
+
+        &__trigger {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            padding: 0.2rem;
+            border-radius: 50%;
+            color: #1e40af; // Dark blue like Binarytool message icon
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            flex: 0 0 auto;
+
+            &:hover {
+                background-color: rgba(30, 64, 175, 0.1); // Light blue hover
+                color: #1e3a8a; // Darker blue on hover
+            }
+
+            svg {
+                flex-shrink: 0;
+                width: 18px;
+                height: 18px;
+            }
+        }
+
+        .whatsapp-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            margin-top: 0.4rem;
+            background: #ffffff; // White background like Binarytool
+            border: 1px solid #e0e0e0; // Light grey border
+            border-radius: 0.4rem;
+            padding: 0.8rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            z-index: 1000;
+            min-width: 16rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+
+            a {
+                display: flex;
+                align-items: center;
+                gap: 0.8rem;
+                padding: 0.6rem 0.8rem;
+                border-radius: 0.4rem;
+                text-decoration: none;
+                color: #4a5568; // Dark grey text
+                transition: all 0.2s ease;
+
+                &:hover {
+                    background-color: #f5f5f5; // Light grey hover
+                    color: #1e40af; // Dark blue on hover
+                }
+
+                img {
+                    width: 20px;
+                    height: 20px;
+                    flex-shrink: 0;
+                }
+
+                span {
+                    font-size: 1.4rem;
+                    font-weight: 500;
+                }
+            }
+        }
+    }
+
+    &__icons {
+        display: flex;
+        align-items: center;
+        gap: 1.2rem;
+        margin-left: auto;
+        margin-right: 2rem;
+    }
+
+    &__icon-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.8rem;
+        border-radius: 0.4rem;
+        transition: background-color 0.2s ease;
+
+        &:hover {
+            background-color: var(--general-hover);
+        }
+
+        &:active {
+            background-color: var(--general-active);
+        }
+
+        svg {
+            fill: var(--text-prominent);
+            transition: fill 0.2s ease;
+        }
+
+        &:hover svg {
+            fill: var(--text-prominent);
+        }
+    }
+}
+
+// Theme-responsive background - outside of .app-header scope
+body.theme--light .app-header .powered-by-deriv-header {
+    background-color: #f5f5f5; // Light grey like Binarytool
+
+    .powered-by-deriv-header__label {
+        color: #6b7280;
+    }
+
+    .deriv-word {
+        color: #1e40af !important;
+    }
+
+    .whatsapp-dropdown {
+        background-color: #ffffff; // White background
+        border-color: #e0e0e0; // Light grey border
+
+        a {
+            color: #4a5568; // Dark grey text
+
+            &:hover {
+                background-color: #f5f5f5; // Light grey hover
+                color: #1e40af; // Dark blue on hover
+            }
+        }
+    }
+}
+
+body.theme--dark .app-header .powered-by-deriv-header {
+    background-color: #f5f5f5; // Light grey like Binarytool (same for dark theme)
+
+    .powered-by-deriv-header__label {
+        color: #6b7280;
+    }
+
+    .deriv-word {
+        color: transparent !important;
+        -webkit-text-fill-color: transparent !important;
+    }
+
+    .whatsapp-dropdown {
+        background-color: #ffffff; // White background
+        border-color: #e0e0e0; // Light grey border
+
+        a {
+            color: #4a5568; // Dark grey text
+
+            &:hover {
+                background-color: #f5f5f5; // Light grey hover
+                color: #1e40af; // Dark blue on hover
+            }
+        }
+    }
+}
+
+@keyframes headerGlow {
+    0% {
+        filter: hue-rotate(0deg);
+        text-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+    }
+    50% {
+        filter: hue-rotate(25deg);
+        text-shadow: 0 0 20px rgba(16, 185, 129, 0.45);
+    }
+    100% {
+        filter: hue-rotate(45deg);
+        text-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+    }
+}
+
+@keyframes headerPulse {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-1px);
+    }
+}
+
+// Phone shaking animation
+@keyframes phoneShake {
+    0%,
+    100% {
+        transform: translateX(0) rotate(0deg);
+    }
+    10%,
+    30%,
+    50%,
+    70%,
+    90% {
+        transform: translateX(-2px) rotate(-3deg);
+    }
+    20%,
+    40%,
+    60%,
+    80% {
+        transform: translateX(2px) rotate(3deg);
+    }
+}
+
+.account-switcher {
+    &__item {
+        .deriv-account-switcher-item {
+            padding: 0.6rem 1.6rem;
+
+            &__detail {
+                .deriv-account-switcher-item__currency {
+                    margin-bottom: 2px;
+                    font-size: 0.95rem;
+                    color: var(--text-disabled);
+                    font-weight: 500;
+                    letter-spacing: 0.01em;
+                }
+            }
+
+            &__balance {
+                font-size: 1.55rem;
+                font-weight: 700;
+                color: var(--text-prominent);
+                line-height: 1.2;
+            }
+
+            &__icon {
+                margin-right: unset;
+                margin-inline-end: 10px;
+            }
+        }
+
+        &--disabled {
+            opacity: 0.32;
+        }
+    }
+
+    &__separator:after {
+        background-color: var(--general-section-2);
+        content: '';
+        height: 4px;
+        position: absolute;
+        width: 100%;
+        z-index: 1;
+    }
+
+    &-footer {
+        background: var(--general-main-1);
+
+        &__actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 1rem;
+            background-color: var(--du-general-main-2);
+
+            &--hide-manage-button {
+                justify-content: flex-end;
+            }
+
+            .manage-button {
+                background: none;
+                border: 1px solid var(--button-secondary-default);
+                margin-inline-end: 0.7rem;
+                height: auto;
+                padding: 0.4rem 1.2rem;
+                white-space: break-spaces;
+
+                &:hover {
+                    background-color: unset !important;
+                }
+
+                span {
+                    color: var(--text-prominent);
+                    font-size: var(--text-size-xs);
+                    cursor: pointer;
+                    font-weight: 700;
+                }
+            }
+        }
+    }
+}
+
+.derivs-secondary-tabs {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: var(--general-main-1);
+
+    .derivs-text__size--md {
+        font-size: 14px;
+        line-height: 18px;
+    }
+}
+
+.deriv-account-switcher {
+    &-item {
+        &__balance {
+            button {
+                border-width: 1px;
+                height: 2.4rem;
+                min-width: 4.8rem;
+
+                span {
+                    color: var(--text-prominent) !important;
+                }
+            }
+        }
+    }
+
+    &__button {
+        margin-inline-end: 0.8rem;
+
+        @include mobile-or-tablet-screen {
+            margin-inline-end: 0;
+        }
+
+        .deriv-context-menu {
+            box-shadow: 0 0 2px 0 var(--du-shadow-box, #00000014);
+        }
+
+        .deriv-account-switcher__balance + svg > path {
+            fill: var(--text-general);
+        }
+
+        &:hover {
+            background-color: unset;
+        }
+    }
+
+    &__currency {
+        margin-bottom: 2px;
+    }
+
+    &__icon {
+        margin-right: 7px;
+    }
+
+    &__balance {
+        padding: 0 1rem 0.1rem 0;
+    }
+
+    .deriv-account-switcher-item__balance {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: var(--text-prominent);
+        line-height: 1.2;
+    }
+
+    &__list {
+        &.account-switcher-panel {
+            padding: 0.4rem 0.8rem 0;
+
+            .account-switcher-panel__no-eu-accounts {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+
+                .add-button {
+                    background: none;
+
+                    span {
+                        color: #000;
+                        font-size: 12px;
+                        border: solid 2px var(--text-disabled-1);
+                        padding: 0.1rem 1.6rem;
+                        border-radius: 0.5em;
+                        cursor: pointer;
+                    }
+                }
+
+                .deriv-account-switcher-item {
+                    background: none;
+                }
+            }
+        }
+
+        .deriv-accordion {
+            &__content {
+                background: unset;
+                overflow: auto;
+            }
+
+            &__text {
+                margin-top: 0;
+            }
+
+            &__icon {
+                margin-left: unset;
+                margin-inline-start: auto;
+            }
+        }
+    }
+
+    &__title {
+        height: 4rem;
+        margin: 0 auto;
+        padding: 1.2rem 1.6rem;
+    }
+
+    &__container--mobile {
+        min-height: auto;
+        max-width: 600px;
+    }
+
+    &__container {
+        max-height: 80vh;
+        overflow: auto;
+        background: var(--general-main-1);
+        background-color: var(--general-main-2);
+        border-radius: 4px;
+        box-shadow: 0 8px 16px 0 var(--shadow-menu) !important;
+        position: absolute;
+        transition:
+            transform 0.3s ease,
+            opacity 0.25s linear;
+        width: 320px;
+        top: 55px;
+        right: unset;
+        inset-inline-end: 0;
+    }
+
+    &__logout {
+        align-items: center;
+        display: flex;
+        grid-column: 2 / 3;
+        justify-content: flex-end;
+        justify-self: end;
+        padding: 1.6em 1.3em;
+
+        &-text {
+            margin-inline-end: 1rem;
+            font-size: var(--text-size-xs);
+        }
+
+        &--loader {
+            display: flex;
+            justify-content: flex-end;
+            padding: 16px;
+        }
+    }
+
+    &__tradershub-link {
+        background: var(--du-general-main-2);
+        color: var(--text-prominent);
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    &__footer {
+        padding: 0;
+        display: block;
+    }
+}
+
+.languages-modal {
+    background: var(--general-section-1);
+
+    .deriv-modal__header {
+        border-bottom: 2px solid var(--general-section-5);
+    }
+
+    .deriv-modal__close-icon {
+        path {
+            fill: var(--text-prominent);
+        }
+    }
+
+    .deriv-text {
+        color: var(--text-prominent) !important;
+    }
+}
+
+.auth-actions {
+    display: flex;
+    padding-block: 8px;
+
+    button {
+        font-weight: 400;
+        margin-inline-end: 1.6rem;
+    }
+}
+
+// Custom button styles - same blue as active tab
+.auth-login-button {
+    background: #1e40af !important; // Same blue as active tab
+    color: #ffffff !important; // White text
+    border: 1px solid #1e40af !important;
+
+    &:hover:not([disabled]) {
+        background: #1e3a8a !important; // Darker blue on hover
+        border-color: #1e3a8a !important;
+    }
+
+    .dc-btn__text {
+        color: #ffffff !important; // White text
+    }
+}
+
+.auth-signup-button {
+    background: #1e40af !important; // Same blue as active tab
+    color: #ffffff !important; // White text
+    border: 1px solid #1e40af !important;
+
+    &:hover:not([disabled]) {
+        background: #1e3a8a !important; // Darker blue on hover
+        border-color: #1e3a8a !important;
+    }
+
+    .dc-btn__text {
+        color: #ffffff !important; // White text
+    }
+}
+
+.deposit-button,
+.manage-funds-button {
+    margin-inline-end: 1.6rem;
+}
+
+.deriv-accordion--underline {
+    border-bottom: none;
+}

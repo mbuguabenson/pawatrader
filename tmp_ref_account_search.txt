@@ -1,0 +1,135 @@
+src/external/bot-skeleton/services/api/appId.js:178:        active_account_type: typeof active_account,
+src/external/bot-skeleton/services/api/api-base.ts:119:        const accountType = urlParams.get('account_type');
+src/external/bot-skeleton/services/api/api-base.ts:128:            console.log('[handleTokenExchangeIfNeeded] Found account_type in URL:', accountType);
+src/external/bot-skeleton/services/api/api-base.ts:129:            localStorage.setItem('account_type', accountType);
+src/external/bot-skeleton/services/api/api-base.ts:130:            // Remove account_type from URL after storing
+src/external/bot-skeleton/services/api/api-base.ts:131:            removeUrlParameter('account_type');
+src/external/bot-skeleton/services/api/api-base.ts:156:                        localStorage.setItem('account_type', isDemo ? 'demo' : 'real');
+src/external/bot-skeleton/services/api/api-base.ts:295:                localStorage.removeItem('account_type');
+src/external/bot-skeleton/services/api/api-base.ts:304:    private getLegacyAccountList(balance?: any, allBalance?: any): TAuthData['account_list'] {
+src/external/bot-skeleton/services/api/api-base.ts:322:                        : Number(accountBalance?.balance ?? (loginid === balance?.loginid ? balance?.balance : 0));
+src/external/bot-skeleton/services/api/api-base.ts:444:                        const allBalanceResult = await (this.api as any).balance({ account: 'all' });
+src/external/bot-skeleton/services/api/api-base.ts:447:                            '[authorizeAndSubscribe] api.balance({ account: all }) raw result:',
+src/external/bot-skeleton/services/api/api-base.ts:452:                            '[authorizeAndSubscribe] Could not fetch all legacy account balances:',
+src/external/bot-skeleton/services/api/api-base.ts:495:            const account_type = getAccountType(balance?.loginid);
+src/external/bot-skeleton/services/api/api-base.ts:512:                      is_virtual: account_type === 'real' ? 0 : 1,
+src/external/bot-skeleton/services/api/api-base.ts:514:                      account_type: account_type === 'real' ? 'real' : 'demo',
+src/external/bot-skeleton/services/api/api-base.ts:533:                                is_virtual: a.account_type === 'demo' ? 1 : 0,
+src/external/bot-skeleton/services/api/api-base.ts:545:                is_virtual: account_type === 'real' ? 0 : 1,
+src/external/bot-skeleton/services/api/api-base.ts:551:            // // Set account_type in localStorage based on loginid prefix using centralized utility
+src/external/bot-skeleton/services/api/api-base.ts:556:                localStorage.setItem('account_type', 'demo');
+src/external/bot-skeleton/services/api/api-base.ts:558:                localStorage.setItem('account_type', 'real');
+src/external/bot-skeleton/services/api/api-base.ts:566:                    is_virtual: account_type === 'real' ? 0 : 1,
+src/external/bot-skeleton/services/api/api-base.ts:601:                    account_id: balance?.loginid,
+src/external/bot-skeleton/services/api/api-base.ts:604:                    account_type: account_type === 'real' ? 'real' : 'demo',
+src/external/bot-skeleton/services/tradeEngine/trade/Balance.js:20:                    if (this.accountInfo) info({ accountID: this.accountInfo.loginid, balance: balance_string });
+src/external/bot-skeleton/utils/observer.js:14:-bot.info: Emitted in trade/Balance.js, it announces account ID and balance,
+src/external/bot-skeleton/scratch/blocks/Binary/Tools/Misc/balance.js:34:            tooltip: localize('This block returns account balance'),
+src/external/bot-skeleton/scratch/blocks/Binary/Tools/Misc/balance.js:42:                'This block gives you the balance of your account either as a number or a string of text.'
+src/stores/run-panel-store.ts:212:            // Use generateUrlWithRedirect to add redirect parameter and account_type from localStorage
+src/stores/client-store.ts:51:    all_accounts_balance: Balance | null = null;
+src/stores/client-store.ts:68:        current_account?: { loginid: string; currency: string; is_virtual: number; balance?: number };
+src/stores/client-store.ts:84:            if (typeof data.current_account.balance === 'number') {
+src/stores/client-store.ts:88:                    data.current_account.balance
+src/stores/client-store.ts:122:            all_accounts_balance: observable,
+src/stores/client-store.ts:243:                const incomingBalance = Number(account.balance ?? 0);
+src/stores/client-store.ts:244:                const existingServerBalance = this.server_balances[account.loginid];
+src/stores/client-store.ts:246:                    !!this.demo_balance_overrides[account.loginid] &&
+src/stores/client-store.ts:254:                this.server_balances[account.loginid] = serverBalance;
+src/stores/client-store.ts:258:                    balance: this.getDisplayedBalanceAmount(account.loginid, serverBalance, account.currency),
+src/stores/client-store.ts:306:    setAllAccountsBalance = (all_accounts_balance: Balance | undefined) => {
+src/stores/client-store.ts:307:        this.all_accounts_balance = all_accounts_balance ?? null;
+src/stores/client-store.ts:327:            this.accounts[resolvedLoginId]?.balance ??
+src/stores/client-store.ts:329:            this.account_list.find(account => account.loginid === resolvedLoginId)?.balance;
+src/stores/client-store.ts:362:            Number(this.accounts[loginid]?.balance ?? (loginid === this.loginid ? this.balance : 0) ?? 0);
+src/stores/client-store.ts:547:            this.all_accounts_balance = null;
+src/stores/client-store.ts:555:            localStorage.removeItem('account_type');
+src/stores/client-store.ts:668:                this.all_accounts_balance = null;
+src/stores/client-store.ts:684:                localStorage.removeItem('account_type');
+src/hooks/useLogout.ts:34:                localStorage.removeItem('account_type');
+src/hooks/api/account/useActiveAccount.tsx:35:            balance: currentBalanceData?.balance
+src/hooks/api/account/useActiveAccount.tsx:36:                ? addComma(currentBalanceData.balance.toFixed(getDecimalPlaces(currentBalanceData.currency)))
+src/hooks/__tests__/useLogout.spec.ts:121:                expect(localStorage.removeItem).toHaveBeenCalledWith('account_type');
+src/services/oauth-token-exchange.service.ts:223:                        localStorage.setItem('account_type', isDemo ? 'demo' : 'real');
+src/services/derivws-accounts.service.ts:9:    balance: string;
+src/services/derivws-accounts.service.ts:13:    account_type: 'demo' | 'real';
+src/constants/backend-error-messages.ts:118:        'Sorry, your account cash balance is too high ({{param1}}). Your maximum account balance is {{param2}}.'
+src/constants/backend-error-messages.ts:183:    InsufficientBalance: localize('Your account balance is insufficient to buy this contract.'),
+src/constants/quick-strategies/reverse_dalembert.ts:98:                "Effective trading with the D'Alembert system requires careful consideration of its stake progression and risk management. Traders can automate this approach using Deriv Bot, setting profit and loss thresholds to ensure balanced and controlled trading. However, it is crucial for traders to assess their risk appetite, test strategies on a demo account, and align with their own trading style before transitioning to real money trading. This optimization process helps strike a balance between potential gains and losses while managing risk prudently."
+src/constants/quick-strategies/d_alembert.ts:169:                `${localize('The')} D'Alembert ${localize('system offers more balanced trading through controlled stake progression. With prudent risk management like stake limits, it can be effectively automated in Deriv Bot. However, traders should thoroughly assess their risk appetite, test strategies on a demo account to align with their trading style before trading with real money. This allows optimising the approach and striking a balance between potential gains and losses whilst managing risk.')}`
+src/app/App.tsx:84: *   account_type   → 'demo' or 'real'
+src/app/App.tsx:105:        localStorage.setItem('account_type', isDemo ? 'demo' : 'real');
+src/app/App.tsx:111:            account_type: isDemo ? 'demo' : 'real',
+src/public-path.ts:61:            const { residence, account_type, created_at } = client_accounts[active_loginid] || {};
+src/public-path.ts:62:            setSurvicateUserAttributes(residence, account_type, created_at);
+src/types/api-types.ts:670:    account_type?: 'demo' | 'real';
+src/utils/api-token-permissions.ts:16:    account_type: 'demo' | 'real';
+src/utils/api-token-permissions.ts:50:    localStorage.removeItem('account_type');
+src/utils/api-token-permissions.ts:81:    localStorage.setItem('account_type', isDemoAccount(loginid) ? 'demo' : 'real');
+src/utils/api-token-permissions.ts:139:    account_type: isDemoAccount(loginid) ? 'demo' : 'real',
+src/utils/url-redirect-utils.ts:7: * Generate URL with redirect parameter back to current page, account_id, account_type, and language if available
+src/utils/url-redirect-utils.ts:9: * @returns URL with redirect parameter to current page, account_id, account_type, and lang parameters (excluding query params)
+src/utils/url-redirect-utils.ts:32:            url.searchParams.set('account_type', isDemoAccount(loginId) ? 'demo' : 'real');
+src/utils/account-helpers.ts:5:export const ACCOUNT_TYPE_KEY = 'account_type';
+src/utils/help-content/help-strings/balance.ts:5:        localize('This block returns current account balance.'),
+src/utils/__tests__/error-handler.spec.ts:7:            return 'Your account balance is insufficient to buy this contract.';
+src/utils/__tests__/error-handler.spec.ts:49:            expect(result).toBe('Your account balance is insufficient to buy this contract.');
+src/utils/__tests__/api-token-permissions.spec.ts:74:            account_type: 'demo',
+src/utils/__tests__/account-helpers.spec.ts:300:            expect(ACCOUNT_TYPE_KEY).toBe('account_type');
+src/utils/auth-utils.ts:14:    localStorage.removeItem('account_type'); // Clear account type when clearing auth data
+src/components/transaction-details/transaction-details-desktop.tsx:21:/* TODO: Add back account & balance when we have support from transaction store */
+src/components/shared/utils/constants/poi-failure-codes.tsx:111:            <Localize i18n_default_text='Your age in the document you provided appears to be below 18 years. We’re only allowed to offer our services to clients above 18 years old, so we’ll need to close your account. If you have a balance in your account, contact us via live chat and we’ll help to withdraw your funds before your account is closed.' />
+src/components/shared/utils/currency/currency.ts:333:    account_type: 'real' | 'demo';
+src/components/layout/header/account-switcher.scss:4:$account-balance-green: #0b6b37;
+src/components/layout/header/account-switcher.scss:211:    &__balance-section {
+src/components/layout/header/account-switcher.scss:216:    &__balance {
+src/components/layout/header/account-switcher.scss:223:        color: $account-balance-green;
+src/components/layout/header/account-switcher.scss:252:    &__account-type-and-balance {
+src/components/layout/header/account-switcher.scss:311:        &__balance-section {
+src/components/layout/header/account-switcher.scss:315:        &__balance {
+src/components/layout/header/account-switcher.scss:324:    .acc-info__balance {
+src/components/layout/header/account-switcher.scss:326:        color: $account-balance-green;
+src/components/layout/header/account-switcher.scss:367:        &-account-type-and-balance {
+src/components/layout/header/account-switcher.scss:375:        &-balance {
+src/components/layout/header/account-switcher.scss:655:    &__balance {
+src/components/layout/header/account-switcher.scss:948:    &__balance {
+src/components/layout/header/account-switcher.scss:949:        color: $account-balance-green;
+src/components/layout/header/account-switcher.scss:994:        color: $account-balance-green;
+src/components/layout/header/header.tsx:43:        allBalanceData: client?.all_accounts_balance,
+src/components/layout/header/header.scss:182:        .deriv-account-switcher__balance + svg > path {
+src/components/layout/header/__tests__/account-switcher.spec.tsx:11:    { loginid: 'CR123', currency: 'USD', balance: 100, is_virtual: 0 },
+src/components/layout/header/__tests__/account-switcher.spec.tsx:12:    { loginid: 'VRTC456', currency: 'USD', balance: 9992.15, is_virtual: 1 },
+src/components/layout/header/__tests__/account-switcher.spec.tsx:64:    formatDisplayBalanceValue: (balance: string | number, currency: string, displayCurrency?: string) =>
+src/components/layout/header/__tests__/account-switcher.spec.tsx:65:        `${balance} ${displayCurrency || currency}`,
+src/components/layout/header/__tests__/account-switcher.spec.tsx:84:    balance: '100.00',
+src/components/layout/header/__tests__/account-switcher.spec.tsx:94:    balance: '9992.15',
+src/components/layout/header/__tests__/account-switcher.spec.tsx:127:    it('renders active account balance in the header', () => {
+src/components/layout/header/__tests__/account-switcher.spec.tsx:130:        expect(screen.getByTestId('dt_balance')).toHaveTextContent('100.00 USD');
+src/components/layout/header/__tests__/account-switcher.spec.tsx:186:        expect(setItemSpy).toHaveBeenCalledWith('account_type', 'demo');
+src/components/layout/header/__tests__/account-switcher.spec.tsx:192:    it('resets the active demo balance from the demo tab', () => {
+src/components/layout/header/__tests__/account-switcher.spec.tsx:198:        fireEvent.change(screen.getByLabelText('Demo balance amount'), { target: { value: '2500' } });
+src/components/layout/header/__tests__/account-switcher.spec.tsx:202:        expect(screen.getByText('Demo balance reset to 2500.00 USD')).toBeInTheDocument();
+src/components/layout/header/__tests__/account-switcher.spec.tsx:209:        fireEvent.change(screen.getByLabelText('Demo balance amount'), { target: { value: '1200' } });
+src/components/layout/header/__tests__/account-switcher.spec.tsx:213:        expect(screen.getByText('Switch to a demo account to set its starting balance.')).toBeInTheDocument();
+src/components/layout/header/account-switcher.tsx:102:            localStorage.setItem('account_type', isDemoAccount(loginid) ? 'demo' : 'real');
+src/components/layout/header/account-switcher.tsx:126:                balance: addComma(Number(account.balance ?? 0).toFixed(getDecimalPlaces(account.currency))),
+src/components/layout/header/account-switcher.tsx:135:    const balance = activeAccount?.balance;
+src/components/layout/header/account-switcher.tsx:145:        balance ?? 0,
+src/components/layout/header/account-switcher.tsx:158:            setDemoResetAmount(activeDemoOverride.custom_balance.toFixed(getDecimalPlaces(activeDemoResetCurrency)));
+src/components/layout/header/account-switcher.tsx:162:        const numericActiveBalance = Number(String(balance ?? 0).replace(/,/g, ''));
+src/components/layout/header/account-switcher.tsx:164:    }, [activeDemoOverride, activeDemoResetCurrency, balance, isActiveDemoAccount]);
+src/components/layout/header/account-switcher.tsx:179:                setDemoResetError('Switch to a demo account to set its starting balance.');
+src/components/layout/header/account-switcher.tsx:185:                setDemoResetError('Enter a valid demo balance amount.');
+src/components/layout/header/account-switcher.tsx:191:                setDemoResetError('We could not reset the demo balance right now. Try again.');
+src/components/layout/header/account-switcher.tsx:196:                `Demo balance reset to ${addComma(
+src/components/layout/header/account-switcher.tsx:262:                        {(typeof balance !== 'undefined' || !currency) && (
+src/components/layout/header/account-switcher.tsx:263:                            <div className='acc-info__balance-section'>
+src/components/layout/header/account-switcher.tsx:265:                                    data-testid='dt_balance'
+src/components/layout/header/account-switcher.tsx:266:                                    className={classNames('acc-info__balance', {
+src/components/layout/header/account-switcher.tsx:267:                                        'acc-info__balance--no-currency': !currency && !isVirtual,
+src/components/layout/header/account-switcher.tsx:360:                                    <Text as='span' size='xs' weight='bold' className='acc-dropdown__balance'>
+src/components/layout/header/account-switcher.tsx:363:                                                account.balance,
+src/components/layout/header/account-switcher.tsx:412:                                    <Text as='span' size='xs' weight='bold' className='acc-dropdown__balance'>
+src/components/layout/header/account-switcher.tsx:414:                                            account.balance,
+src/components/layout/header/account-switcher.tsx:425:                                    Set the starting balance for your current demo account.
+src/components/layout/header/account-switcher.tsx:435:                                        aria-label='Demo balance amount'

@@ -1,0 +1,83 @@
+.all-analysis {
+    width: 100%;
+    max-width: 980px;
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    border-radius: 20px;
+    padding: 2rem;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    font-family: 'Poppins', sans-serif;
+    text-align: center;
+    min-height: 60vh;
+    overflow: visible;
+    margin: 0 auto;
+    position: relative;
+
+    .all-analysis-container {
+        width: 100%;
+        max-width: 800px;
+        margin: 0 auto;
+
+        h2 {
+            color: #00f7ff;
+            margin-top: 20px;
+            font-size: 26px;
+            margin-bottom: 1.5rem;
+        }
+
+        table {
+            width: 100%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 12px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(6px);
+            margin-bottom: 2rem;
+
+            th,
+            td {
+                border: 1px solid rgba(255, 255, 255, 0.08);
+                padding: 10px;
+                text-align: center;
+                font-size: 14px;
+                color: #ffffff;
+            }
+
+            th {
+                background: rgba(0, 0, 0, 0.3);
+                color: #9f87ff;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                font-weight: 600;
+            }
+
+            .signal-box {
+                font-weight: 600;
+                border-radius: 4px;
+                padding: 6px 10px;
+                display: inline-block;
+                font-size: 14px;
+                min-width: 70px;
+            }
+
+            .rise,
+            .fall,
+            .over {
+                background: linear-gradient(135deg, #9f87ff, #00f7ff);
+                color: #000;
+            }
+
+            .under {
+                background: linear-gradient(135deg, #00f7ff, #9f87ff);
+                color: #000;
+            }
+
+            .neutral {
+                background-color: #ffb2b2;
+                color: #000;
+            }
+        }
+    }
+}

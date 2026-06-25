@@ -1,0 +1,251 @@
+@use 'components/shared/styles/mixins' as *;
+
+.risk-calculator {
+    width: 100%;
+    max-width: 1200px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 70vh;
+    padding: 3rem 2rem;
+
+    .risk-calculator-container {
+        background: linear-gradient(135deg, #1a1f2e 0%, #2a3440 50%, #1e2835 100%);
+        padding: 3rem 2.5rem;
+        border-radius: 20px;
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.5),
+            0 0 40px rgba(79, 195, 247, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        width: 95%;
+        max-width: 700px;
+        text-align: center;
+        animation: fadeIn 0.6s ease-in-out;
+        border: 2px solid rgba(79, 195, 247, 0.3);
+        position: relative;
+        overflow: hidden;
+
+        &::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(79, 195, 247, 0.1) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        h1 {
+            font-size: 2.8rem;
+            margin-bottom: 2.5rem;
+            background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 50%, #00acc1 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            font-weight: 800;
+            text-shadow: 0 0 30px rgba(79, 195, 247, 0.5);
+            position: relative;
+            z-index: 1;
+            filter: drop-shadow(0 0 10px rgba(79, 195, 247, 0.6));
+        }
+
+        .input-group {
+            margin-bottom: 2.5rem;
+            position: relative;
+            z-index: 1;
+
+            label {
+                display: block;
+                font-size: 1.4rem;
+                margin-bottom: 1rem;
+                color: #e0e0e0;
+                font-weight: 600;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+
+            input {
+                width: 100%;
+                padding: 1.2rem 1.5rem;
+                font-size: 1.5rem;
+                border: 2px solid rgba(79, 195, 247, 0.3);
+                border-radius: 12px;
+                background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+                color: #ffffff;
+                outline: none;
+                transition: all 0.3s ease;
+                box-sizing: border-box;
+                -webkit-appearance: none;
+                -moz-appearance: textfield;
+                font-weight: 600;
+                box-shadow:
+                    0 4px 15px rgba(0, 0, 0, 0.3),
+                    inset 0 2px 5px rgba(0, 0, 0, 0.2);
+
+                &:focus {
+                    background: linear-gradient(135deg, #455a64 0%, #546e7a 100%);
+                    border-color: #4fc3f7;
+                    transform: scale(1.03);
+                    box-shadow:
+                        0 6px 25px rgba(79, 195, 247, 0.4),
+                        0 0 20px rgba(79, 195, 247, 0.3),
+                        inset 0 2px 5px rgba(0, 0, 0, 0.2);
+                }
+
+                &::placeholder {
+                    color: rgba(255, 255, 255, 0.4);
+                    font-size: 1.3rem;
+                }
+            }
+        }
+
+        .results {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            z-index: 1;
+
+            .result-item {
+                background: linear-gradient(135deg, #37474f 0%, #455a64 100%);
+                padding: 1.5rem 2rem;
+                border-radius: 15px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                animation: slideUp 0.5s ease-out backwards;
+                transition: all 0.3s ease;
+                font-size: 1.1rem;
+                border: 2px solid rgba(79, 195, 247, 0.2);
+                box-shadow:
+                    0 4px 15px rgba(0, 0, 0, 0.3),
+                    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+
+                &:hover {
+                    background: linear-gradient(135deg, #455a64 0%, #546e7a 100%);
+                    transform: translateY(-3px);
+                    box-shadow:
+                        0 8px 25px rgba(79, 195, 247, 0.3),
+                        0 0 15px rgba(79, 195, 247, 0.2),
+                        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+                    border-color: rgba(79, 195, 247, 0.5);
+                }
+
+                &:nth-child(1) {
+                    animation-delay: 0.1s;
+                }
+
+                &:nth-child(2) {
+                    animation-delay: 0.2s;
+                }
+
+                &:nth-child(3) {
+                    animation-delay: 0.3s;
+                }
+
+                span:first-child {
+                    font-weight: 700;
+                    color: #90caf9;
+                    font-size: 1.15rem;
+                    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+                }
+
+                span:last-child {
+                    font-size: 1.6rem;
+                    color: #4fc3f7;
+                    font-weight: 800;
+                    text-shadow: 0 0 10px rgba(79, 195, 247, 0.5);
+                    background: linear-gradient(135deg, #4fc3f7 0%, #29b6f6 100%);
+                    -webkit-background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    background-clip: text;
+                }
+            }
+        }
+    }
+
+    // Mobile responsive risk calculator
+    @include mobile-or-tablet-screen {
+        padding: 1.5rem 1rem;
+        min-height: 60vh;
+
+        .risk-calculator-container {
+            padding: 2rem 1.5rem;
+            margin: 0.5rem;
+            max-width: 95%;
+
+            h1 {
+                font-size: 2rem;
+                letter-spacing: 2px;
+                margin-bottom: 2rem;
+            }
+
+            .input-group {
+                margin-bottom: 2rem;
+
+                label {
+                    font-size: 1.2rem;
+                    margin-bottom: 0.8rem;
+                }
+
+                input {
+                    font-size: 1.3rem;
+                    padding: 1rem 1.2rem;
+                }
+            }
+
+            .results {
+                gap: 1.2rem;
+
+                .result-item {
+                    padding: 1.2rem 1.5rem;
+                    font-size: 1rem;
+
+                    span:first-child {
+                        font-size: 1rem;
+                    }
+
+                    span:last-child {
+                        font-size: 1.4rem;
+                    }
+                }
+            }
+        }
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.5;
+        transform: scale(1.1);
+    }
+}

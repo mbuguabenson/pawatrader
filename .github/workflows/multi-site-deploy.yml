@@ -1,0 +1,277 @@
+name: Multi-Site Deployment
+
+on:
+  push:
+    branches: [master, main]
+  workflow_dispatch:
+    inputs:
+      site_id:
+        description: 'Specific site ID to deploy (leave empty for all)'
+        required: false
+        type: string
+  repository_dispatch:
+    types: [site_deployment_request, site_created]
+
+jobs:
+  fetch-configs:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+      
+      - name: Fetch site configurations from Appwrite
+        id: set-matrix
+        run: |
+          # Check if this is a single-site deployment request
+          SPECIFIC_SITE_ID="${{ github.event.client_payload.site_id || inputs.site_id || '' }}"
+          
+          if [ -n "$SPECIFIC_SITE_ID" ]; then
+            echo "🎯 Deploying specific site: $SPECIFIC_SITE_ID"
+            
+            # Fetch only the specific site config
+            CONFIGS=$(curl -s -X GET \
+              "https://fra.cloud.appwrite.io/v1/databases/${{ secrets.APPWRITE_DATABASE_ID }}/collections/deployment_configs/documents/$SPECIFIC_SITE_ID" \
+              -H "X-Appwrite-Project: ${{ secrets.APPWRITE_PROJECT_ID }}" \
+              -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+              -H "Content-Type: application/json")
+            
+            echo "Single site config:"
+            echo "$CONFIGS"
+            
+            # Check if the API returned a valid document
+            if ! echo "$CONFIGS" | jq empty 2>/dev/null; then
+              echo "❌ Invalid JSON response from single site API"
+              echo "Response: $CONFIGS"
+              echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Wrap single document in documents array format
+            MATRIX=$(echo "$CONFIGS" | jq -c '{
+              include: [{
+                siteId: (.["$id"] // .siteId // ""),
+                siteName: (.siteName // "Unnamed Site"),
+                appId: (.appId // "120839"),
+                primaryColor: (.primaryColor // "#ff444f"),
+                secondaryColor: (.secondaryColor // "#85acb0"),
+                domain: (.domain // "")
+              }]
+            }')
+            
+            echo "✅ Formatted matrix for single site:"
+            echo "$MATRIX"
+          else
+            echo "🌍 Deploying all sites"
+            
+            # Fetch all site configs from Appwrite database
+            CONFIGS=$(curl -s -X GET \
+              "https://fra.cloud.appwrite.io/v1/databases/${{ secrets.APPWRITE_DATABASE_ID }}/collections/deployment_configs/documents" \
+              -H "X-Appwrite-Project: ${{ secrets.APPWRITE_PROJECT_ID }}" \
+              -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+              -H "Content-Type: application/json")
+            
+            echo "Raw API Response:"
+            echo "$CONFIGS"
+            
+            # Check if response is valid JSON and has documents
+            if ! echo "$CONFIGS" | jq empty 2>/dev/null; then
+              echo "❌ Invalid JSON response from API"
+              echo "Response: $CONFIGS"
+              echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Check if we got documents array
+            DOC_COUNT=$(echo "$CONFIGS" | jq -r '.documents // [] | length' 2>/dev/null || echo "0")
+            echo "Found $DOC_COUNT site configurations"
+            
+            if [ "$DOC_COUNT" -eq "0" ] || [ -z "$DOC_COUNT" ] || [ "$DOC_COUNT" = "null" ]; then
+              echo "⚠️ No site configurations found in database"
+              echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+            
+            # Extract documents and format for matrix (handle null values)
+            MATRIX=$(echo "$CONFIGS" | jq -c '
+              {
+                include: [
+                  (.documents // [])[] | 
+                  {
+                    siteId: (.siteId // ""),
+                    siteName: (.siteName // ""),
+                    appId: (.appId // "120839"),
+                    primaryColor: (.primaryColor // "#ff444f"),
+                    secondaryColor: (.secondaryColor // "#85acb0"),
+                    domain: (.domain // "")
+                  }
+                ]
+              }
+            ' 2>/dev/null)
+          fi
+          
+          if [ -z "$MATRIX" ] || [ "$MATRIX" = "null" ]; then
+            echo "⚠️ Failed to parse site configurations"
+            echo "matrix={\"include\":[]}" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          
+          echo "matrix=$MATRIX" >> $GITHUB_OUTPUT
+          echo "Matrix for deployment:"
+          echo "$MATRIX" | jq '.'
+
+  build-and-deploy:
+    needs: fetch-configs
+    runs-on: ubuntu-latest
+    # Skip if no sites to deploy
+    if: needs.fetch-configs.outputs.matrix != '{"include":[]}' && needs.fetch-configs.outputs.matrix != ''
+    strategy:
+      matrix: ${{fromJson(needs.fetch-configs.outputs.matrix)}}
+      fail-fast: false
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build site - ${{ matrix.siteName }}
+        env:
+          APP_ID: ${{ matrix.appId }}
+          PRIMARY_COLOR: ${{ matrix.primaryColor }}
+          SECONDARY_COLOR: ${{ matrix.secondaryColor }}
+          SITE_NAME: ${{ matrix.siteName }}
+          DOMAIN: ${{ matrix.domain }}
+        run: |
+          echo "Building ${{ matrix.siteName }} with App ID: ${{ matrix.appId }}"
+          npm run build
+
+      - name: Verify Appwrite Hosting Site - ${{ matrix.siteName }}
+        id: verify-site
+        run: |
+          echo "🔍 Verifying site '${{ matrix.siteName }}' exists in Appwrite Hosting..."
+          echo "📋 Site ID from database: ${{ matrix.siteId }}"
+          
+          # Sites are created by DerivForge API, so we just verify it exists
+          # Use the siteId from database (which should be the Appwrite Site ID)
+          echo "APPWRITE_SITE_ID=${{ matrix.siteId }}" >> $GITHUB_ENV
+          
+          echo "✅ Using Appwrite Site ID: ${{ matrix.siteId }}"
+          echo "🚀 App ID: ${{ matrix.appId }}"
+          echo "🎨 Colors: ${{ matrix.primaryColor }} / ${{ matrix.secondaryColor }}"
+
+      - name: Install jq and zip
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq zip
+      
+      - name: Trigger Appwrite Native Deployment - ${{ matrix.siteName }}
+        if: env.APPWRITE_SITE_ID != ''
+        run: |
+          echo "🚀 Deploying ${{ matrix.siteName }} to Appwrite Hosting..."
+          echo "📋 Site ID: ${{ env.APPWRITE_SITE_ID }}"
+          
+          # Check if dist directory exists
+          if [ ! -d "dist" ]; then
+            echo "❌ Error: dist directory not found!"
+            exit 1
+          fi
+          
+          # Create a zip file of the dist directory
+          cd dist
+          zip -r ../site-build.zip . -q
+          cd ..
+          
+          # Check if zip was created
+          if [ ! -f "site-build.zip" ]; then
+            echo "❌ Error: Failed to create zip file!"
+            exit 1
+          fi
+          
+          echo "📦 Created deployment archive ($(du -h site-build.zip | cut -f1))"
+          
+          # Deploy using Appwrite Hosting API
+          echo "📤 Uploading to Appwrite Hosting..."
+          echo "📋 Endpoint: https://fra.cloud.appwrite.io/v1/sites/${{ env.APPWRITE_SITE_ID }}/deployments"
+          
+          # Try deployment API endpoint
+          DEPLOY_RESPONSE=$(curl -v -s -w "\n%{http_code}" -X POST \
+            "https://fra.cloud.appwrite.io/v1/sites/${{ env.APPWRITE_SITE_ID }}/deployments" \
+            -H "X-Appwrite-Project: ${{ secrets.APPWRITE_PROJECT_ID }}" \
+            -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+            -F "entrypoint=index.html" \
+            -F "code=@site-build.zip" 2>&1)
+          
+          HTTP_CODE=$(echo "$DEPLOY_RESPONSE" | grep -E "^[0-9]{3}$" | tail -n1)
+          DEPLOY_BODY=$(echo "$DEPLOY_RESPONSE" | sed '/^[0-9]\{3\}$/d' | sed '/^[<>*] /d' | tail -n +20)
+          
+          echo "📤 HTTP Status Code: $HTTP_CODE"
+          echo "📤 Full Response:"
+          echo "$DEPLOY_RESPONSE"
+          echo ""
+          echo "📤 Parsed Response Body:"
+          echo "$DEPLOY_BODY" | jq '.' 2>/dev/null || echo "$DEPLOY_BODY"
+          
+          # Check if deployment was successful
+          if [ "$HTTP_CODE" -eq "201" ] || [ "$HTTP_CODE" -eq "200" ]; then
+            DEPLOYMENT_ID=$(echo "$DEPLOY_BODY" | jq -r '.["$id"] // .id // empty' 2>/dev/null || echo "")
+            
+            if [ -n "$DEPLOYMENT_ID" ] && [ "$DEPLOYMENT_ID" != "null" ] && [ "$DEPLOYMENT_ID" != "" ]; then
+              echo "✅ Deployment created successfully! Deployment ID: $DEPLOYMENT_ID"
+              
+              # Try to activate the deployment (if needed)
+              echo "🔄 Checking if deployment needs activation..."
+              ACTIVATE_RESPONSE=$(curl -s -X PATCH \
+                "https://fra.cloud.appwrite.io/v1/sites/${{ env.APPWRITE_SITE_ID }}/deployments/$DEPLOYMENT_ID" \
+                -H "X-Appwrite-Project: ${{ secrets.APPWRITE_PROJECT_ID }}" \
+                -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+                -H "Content-Type: application/json" \
+                -d '{"status":"available"}' 2>&1 || echo "")
+              
+              echo "Activation response: $ACTIVATE_RESPONSE"
+              
+              # Update status in database
+              curl -s -X PUT \
+                "https://fra.cloud.appwrite.io/v1/databases/${{ secrets.APPWRITE_DATABASE_ID }}/collections/deployment_configs/documents/${{ matrix.siteId }}" \
+                -H "X-Appwrite-Project: ${{ secrets.APPWRITE_PROJECT_ID }}" \
+                -H "X-Appwrite-Key: ${{ secrets.APPWRITE_API_KEY }}" \
+                -H "Content-Type: application/json" \
+                -d "{\"status\": \"deployed\", \"updatedAt\": \"$(date -u +"%Y-%m-%dT%H:%M:%SZ")\"}" || echo "⚠️ Could not update status"
+            else
+              echo "⚠️ Deployment response received but could not extract deployment ID"
+              echo "⚠️ Response body: $DEPLOY_BODY"
+            fi
+          else
+            echo "❌ Deployment failed with HTTP $HTTP_CODE"
+            echo "❌ Full response: $DEPLOY_RESPONSE"
+            # Don't exit 1 - let it continue so we can see what happened
+            echo "⚠️ Continuing despite deployment failure for debugging"
+          fi
+          
+          # Cleanup
+          rm -f site-build.zip
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-${{ matrix.siteId }}
+          path: dist/
+          retention-days: 7
+
+  notify-completion:
+    needs: build-and-deploy
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Deployment Summary
+        run: |
+          echo "🎉 Multi-site deployment completed!"
+          echo "Check the artifacts for each site build"

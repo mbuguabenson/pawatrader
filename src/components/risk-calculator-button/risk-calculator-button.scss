@@ -1,0 +1,173 @@
+.risk-calculator-button {
+    position: fixed;
+    top: 110px; // Below header + navigation bar on desktop
+    right: 20px;
+    z-index: 1000;
+    animation: slide-in-right 0.5s ease-out;
+    display: block; // Show by default when component is rendered
+
+    &__btn {
+        background: #3b82f6 !important; // Blue color
+        color: #ffffff !important; // White text
+        border: none !important;
+        padding: 8px 16px !important;
+        border-radius: 4px !important;
+        font-size: 12px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2) !important;
+        transition: all 0.3s ease !important;
+
+        &:hover {
+            background: #2563eb !important; // Darker blue on hover
+            transform: translateY(-1px) !important;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3) !important;
+        }
+
+        &:active {
+            transform: translateY(0) !important;
+        }
+    }
+}
+
+.risk-calculator-modal {
+    &__content {
+        padding: 24px;
+    }
+
+    &__title {
+        margin-bottom: 20px;
+        text-align: center;
+        color: var(--text-general);
+        font-size: 20px;
+        font-weight: 600;
+    }
+}
+
+.risk-calculator-container {
+    .input-group {
+        margin-bottom: 24px;
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-general);
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-normal);
+            border-radius: 4px;
+            font-size: 14px;
+            background: var(--fill-normal);
+            color: var(--text-general);
+
+            &:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            }
+        }
+
+        select {
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23333' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 40px;
+        }
+    }
+
+    .results {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-top: 24px;
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background: var(--fill-normal);
+            border-radius: 4px;
+            border: 1px solid var(--border-normal);
+
+            span:first-child {
+                font-weight: 600;
+                color: var(--text-general);
+            }
+
+            span:last-child {
+                font-weight: 700;
+                color: #3b82f6;
+                font-size: 16px;
+            }
+        }
+    }
+}
+
+// Desktop: Hide by default, show only in bot builder
+@media (min-width: 769px) {
+    .risk-calculator-button {
+        display: none; // Hide on desktop
+    }
+}
+
+// Mobile optimizations
+@media (max-width: 768px) {
+    .risk-calculator-button {
+        top: 100px; // Below mobile header + navigation bar
+        right: 16px;
+        z-index: 1001; // Ensure it stays above content
+
+        &__btn {
+            font-size: 11px !important;
+            padding: 6px 12px !important;
+        }
+    }
+
+    .risk-calculator-modal {
+        &__content {
+            padding: 20px;
+        }
+
+        &__title {
+            font-size: 18px;
+        }
+    }
+
+    .risk-calculator-container {
+        .input-group {
+            input {
+                font-size: 16px; // Prevent zoom on iOS
+            }
+        }
+
+        .results {
+            .result-item {
+                padding: 10px;
+                font-size: 14px;
+
+                span:last-child {
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+}
+
+// Animation for floating button
+@keyframes slide-in-right {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}

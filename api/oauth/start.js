@@ -15,6 +15,22 @@ function randomString(length = 64) {
 const normalizeValue = value =>
     typeof value === 'string' ? value.replace(/[\r\n]+/g, '').trim() : value;
 
+const getCookieOptions = req => {
+    const forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+    const isSecureRequest = forwardedProto === 'https' || forwardedProto === 'wss' || Boolean(req.socket?.encrypted);
+    const secure = isSecureRequest || process.env.NODE_ENV === 'production';
+    const cookieOpts = [`HttpOnly`, `Path=/`, `SameSite=${secure ? 'None' : 'Lax'}`];
+    if (secure) cookieOpts.push('Secure');
+
+    const hostHeader = String(req.headers.host || '');
+    const hostname = hostHeader.split(':')[0].toLowerCase();
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !/^[0-9.]+$/.test(hostname)) {
+        cookieOpts.push(`Domain=${hostname}`);
+    }
+
+    return cookieOpts;
+};
+
 export default async function handler(req, res) {
     // Only GET supported: redirect to the Deriv authorization endpoint
     if (req.method !== 'GET') {
@@ -41,7 +57,8 @@ export default async function handler(req, res) {
             query.redirect_uri ||
             process.env.DERIV_REDIRECT_URI ||
             process.env.OAUTH_REDIRECT_URI ||
-            process.env.REDIRECT_URI
+            process.env.REDIRECT_URI ||
+            'https://brixxie-theta.vercel.app/api/oauth/callback'
         );
 
         if ((!client_id && !app_id) || !redirect_uri) {
@@ -56,9 +73,7 @@ export default async function handler(req, res) {
         const state = randomString(32);
 
         // Set HttpOnly cookies to keep code_verifier, state, preferred account, and OAuth request metadata server-side
-        const isProd = process.env.NODE_ENV === 'production';
-        const cookieOpts = [`HttpOnly`, `Path=/`, isProd ? `SameSite=None` : `SameSite=Lax`];
-        if (isProd) cookieOpts.push('Secure');
+        const cookieOpts = getCookieOptions(req);
 
         const useClientId = Boolean(client_id);
         const useAppId = !useClientId && Boolean(app_id);

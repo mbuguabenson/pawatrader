@@ -1,0 +1,27 @@
+@use 'components/shared/styles/mixins' as *;
+
+// Global reset to eliminate any gaps
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    margin: 0; // Remove any default margins
+    padding: 0; // Remove any default padding
+
+    .deriv-header {
+        background: var(--general-main-1);
+        height: 4rem; // Increased to fit login/signup buttons properly
+        margin: 0; // Remove any default margins
+        padding: 0; // Remove any default padding
+
+        @include mobile-or-tablet-screen {
+            height: 3.5rem; // Increased for mobile to fit buttons
+        }
+    }
+}

@@ -1,0 +1,151 @@
+body {
+    margin: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #1c252e;
+    color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+}
+
+.calculator-container {
+    background: #2a3440;
+    padding: 1.5rem; /* Reduced padding for mobile */
+    border-radius: 12px;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+    width: 90%; /* Responsive width */
+    max-width: 450px;
+    text-align: center;
+    animation: fadeIn 0.6s ease-in-out;
+}
+
+h1 {
+    font-size: 1.8rem; /* Slightly smaller for mobile */
+    margin-bottom: 1.5rem;
+    color: #4fc3f7;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.input-group {
+    margin-bottom: 1.5rem;
+}
+
+label {
+    display: block;
+    font-size: 1rem; /* Smaller font for mobile */
+    margin-bottom: 0.5rem;
+    color: #b0bec5;
+}
+
+input {
+    width: 100%;
+    padding: 0.6rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    background: #37474f;
+    color: #f0f2f5;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+    -webkit-appearance: none; /* Remove default mobile styling */
+    -moz-appearance: textfield; /* Hide arrows in number input */
+}
+
+input:focus {
+    background: #455a64;
+    transform: scale(1.02);
+}
+
+.results {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.result-item {
+    background: #37474f;
+    padding: 0.8rem;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    animation: slideUp 0.5s ease-out backwards;
+    transition: background 0.3s;
+    font-size: 0.9rem; /* Smaller text for mobile */
+}
+
+.result-item:hover {
+    background: #455a64;
+}
+
+.result-item span:first-child {
+    font-weight: 600;
+    color: #90caf9;
+}
+
+.result-item span:last-child {
+    font-size: 1rem;
+    color: #4fc3f7;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 480px) {
+    .calculator-container {
+        padding: 1rem;
+        margin: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    label {
+        font-size: 0.9rem;
+    }
+
+    input {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+
+    .result-item {
+        padding: 0.6rem;
+        font-size: 0.8rem;
+    }
+
+    .result-item span:last-child {
+        font-size: 0.9rem;
+    }
+}
+
+/* Enhance touch targets */
+input {
+    touch-action: manipulation;
+}

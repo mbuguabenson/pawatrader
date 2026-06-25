@@ -1,0 +1,84 @@
+.speedbot-floating-stop {
+    position: fixed;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    z-index: 9999;
+    pointer-events: auto;
+
+    &__button {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.75rem 1rem;
+        background: linear-gradient(135deg, #ff4444, #cc0000);
+        color: white;
+        border: none;
+        border-radius: 25px;
+        box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+        font-weight: 600;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        animation: pulse 2s infinite;
+        min-width: 80px;
+        justify-content: center;
+
+        &:hover {
+            background: linear-gradient(135deg, #ff6666, #ff0000);
+            box-shadow: 0 6px 16px rgba(255, 68, 68, 0.6);
+            transform: scale(1.05);
+        }
+
+        &:active {
+            transform: scale(0.95);
+        }
+    }
+
+    &__icon {
+        font-size: 1.1rem;
+        line-height: 1;
+    }
+
+    &__text {
+        font-size: 0.85rem;
+        white-space: nowrap;
+    }
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 4px 12px rgba(255, 68, 68, 0.8);
+    }
+    100% {
+        box-shadow: 0 4px 12px rgba(255, 68, 68, 0.4);
+    }
+}
+
+// Mobile-specific adjustments
+@media (max-width: 768px) {
+    .speedbot-floating-stop {
+        top: auto;
+        bottom: 1rem;
+        right: 1rem;
+        transform: none;
+
+        &__button {
+            padding: 0.6rem 0.8rem;
+            font-size: 0.8rem;
+            min-width: 70px;
+        }
+
+        &__text {
+            font-size: 0.75rem;
+        }
+    }
+}
+
+// Ensure it's above other elements
+.speedbot-floating-stop {
+    z-index: 10000;
+}

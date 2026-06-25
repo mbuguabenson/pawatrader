@@ -1,0 +1,34 @@
+// Hide the main app content while loader is visible, but keep it loading in background
+// This allows React to render and initialize all components, make API calls, etc.
+.app-content-background {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    // Keep it in the DOM so React can render and initialize everything
+    // Components will load, API will initialize, etc. in the background
+    z-index: 1;
+}
+
+// Show the main app content when loader finishes
+.app-content-visible {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    z-index: 1;
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}

@@ -1,0 +1,423 @@
+.dtrader {
+    width: 100%;
+    height: 100%;
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+
+    &__container {
+        position: relative;
+        z-index: 2;
+        max-width: 650px;
+        width: 100%;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    &__content {
+        background: rgb(255 255 255 / 95%);
+        border-radius: 24px;
+        padding: 3rem 2rem;
+        box-shadow: 0 20px 60px rgb(25 118 210 / 15%);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgb(255 255 255 / 20%);
+        position: relative;
+        overflow: hidden;
+
+        &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #1976d2, #2196f3, #1976d2);
+            background-size: 200% 100%;
+            animation: dtrader-shimmer 3s ease-in-out infinite;
+        }
+    }
+
+    &__icon {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: center;
+
+        &-wrapper {
+            position: relative;
+            animation: dtrader-float 6s ease-in-out infinite;
+        }
+
+        &-wrapper:before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 160px;
+            height: 160px;
+            background: radial-gradient(circle, rgb(25 118 210 / 10%) 0%, transparent 70%);
+            border-radius: 50%;
+            animation: dtrader-pulse 4s ease-in-out infinite;
+        }
+    }
+
+    &__main-icon {
+        filter: drop-shadow(0 10px 30px rgb(25 118 210 / 30%));
+    }
+
+    &__title {
+        margin-bottom: 0.5rem;
+
+        .dc-text {
+            background: linear-gradient(135deg, #1976d2, #2196f3);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+    }
+
+    &__subtitle {
+        margin-bottom: 1.5rem;
+
+        .dc-text {
+            color: #ff9800;
+            font-weight: 600;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+    }
+
+    &__description {
+        margin-bottom: 2.5rem;
+        max-width: 450px;
+        margin-left: auto;
+        margin-right: auto;
+
+        .dc-text {
+            line-height: 1.6;
+            color: #6c757d;
+        }
+    }
+
+    &__features {
+        margin-bottom: 2.5rem;
+        display: grid;
+        gap: 1rem;
+        max-width: 450px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    &__feature-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 1rem;
+        background: rgb(25 118 210 / 5%);
+        border-radius: 12px;
+        border: 1px solid rgb(25 118 210 / 10%);
+        transition: all 0.3s ease;
+
+        &:hover {
+            background: rgb(25 118 210 / 10%);
+            transform: translateX(5px);
+        }
+    }
+
+    &__feature-icon {
+        flex-shrink: 0;
+    }
+
+    &__status {
+        margin-bottom: 2rem;
+        display: flex;
+        justify-content: center;
+    }
+
+    &__status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.75rem 1.5rem;
+        background: rgb(255 152 0 / 10%);
+        border-radius: 25px;
+        border: 1px solid rgb(255 152 0 / 20%);
+    }
+
+    &__status-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #ff9800;
+        animation: dtrader-maintenance-pulse 2s ease-in-out infinite;
+    }
+
+    &__cta {
+        margin-bottom: 2rem;
+    }
+
+    &__notify-btn {
+        background: linear-gradient(135deg, #1976d2, #2196f3);
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1rem;
+        color: #fff;
+        box-shadow: 0 10px 30px rgb(25 118 210 / 30%);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+
+        &:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgb(255 255 255 / 20%), transparent);
+            transition: left 0.5s ease;
+        }
+
+        &:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgb(25 118 210 / 40%);
+
+            &:before {
+                left: 100%;
+            }
+        }
+
+        &:active {
+            transform: translateY(0);
+        }
+    }
+
+    &__progress {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    &__progress-bar {
+        width: 250px;
+        height: 6px;
+        background: rgb(25 118 210 / 10%);
+        border-radius: 3px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    &__progress-fill {
+        width: 85%;
+        height: 100%;
+        background: linear-gradient(90deg, #1976d2, #2196f3);
+        border-radius: 3px;
+        position: relative;
+        animation: dtrader-progress-pulse 2s ease-in-out infinite;
+
+        &:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgb(255 255 255 / 60%));
+            animation: dtrader-progress-shine 2s ease-in-out infinite;
+        }
+    }
+
+    // Background floating elements
+    &__background {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    &__floating-element {
+        position: absolute;
+        border-radius: 50%;
+        background: linear-gradient(135deg, rgb(25 118 210 / 10%), rgb(33 150 243 / 10%));
+        animation: dtrader-float-around 25s linear infinite;
+
+        &--1 {
+            width: 120px;
+            height: 120px;
+            top: 15%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        &--2 {
+            width: 80px;
+            height: 80px;
+            top: 60%;
+            right: 15%;
+            animation-delay: -8s;
+        }
+
+        &--3 {
+            width: 100px;
+            height: 100px;
+            bottom: 25%;
+            left: 20%;
+            animation-delay: -16s;
+        }
+
+        &--4 {
+            width: 60px;
+            height: 60px;
+            top: 30%;
+            right: 30%;
+            animation-delay: -12s;
+        }
+    }
+
+    // Responsive design
+    @media (width <= 768px) {
+        &__container {
+            padding: 1rem;
+        }
+
+        &__content {
+            padding: 2rem 1.5rem;
+            border-radius: 16px;
+        }
+
+        &__title .dc-text {
+            font-size: 2rem;
+        }
+
+        &__subtitle .dc-text {
+            font-size: 1rem;
+        }
+
+        &__features {
+            gap: 0.75rem;
+        }
+
+        &__feature-item {
+            padding: 0.5rem 0.75rem;
+        }
+
+        &__notify-btn {
+            padding: 0.875rem 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        &__progress-bar {
+            width: 200px;
+        }
+    }
+}
+
+// Animations
+@keyframes dtrader-float {
+    0%,
+    100% {
+        transform: translateY(0);
+    }
+
+    50% {
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes dtrader-pulse {
+    0%,
+    100% {
+        opacity: 0.3;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+@keyframes dtrader-shimmer {
+    0% {
+        background-position: -200% 0;
+    }
+
+    100% {
+        background-position: 200% 0;
+    }
+}
+
+@keyframes dtrader-maintenance-pulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.6;
+        transform: scale(1.2);
+    }
+}
+
+@keyframes dtrader-progress-pulse {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.8;
+    }
+}
+
+@keyframes dtrader-progress-shine {
+    0% {
+        transform: translateX(-30px);
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        transform: translateX(30px);
+        opacity: 0;
+    }
+}
+
+@keyframes dtrader-float-around {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+    }
+
+    25% {
+        transform: translate(40px, -40px) rotate(90deg);
+    }
+
+    50% {
+        transform: translate(0, -80px) rotate(180deg);
+    }
+
+    75% {
+        transform: translate(-40px, -40px) rotate(270deg);
+    }
+
+    100% {
+        transform: translate(0, 0) rotate(360deg);
+    }
+}

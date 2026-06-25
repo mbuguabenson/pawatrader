@@ -1,0 +1,273 @@
+.app-header {
+    &__logo-container {
+        display: flex;
+        align-items: center;
+        padding-inline-start: 0;
+        padding-inline-end: 0;
+        border-inline-end: none;
+        gap: 0.1875rem;
+        overflow: visible; /* allow dropdowns to extend outside */
+
+        // Responsive adjustments for mobile and tablet
+        @media (max-width: 768px) {
+            padding-inline-start: 0;
+            padding-inline-end: 0;
+            gap: 0.1875rem;
+            justify-content: flex-start;
+        }
+    }
+
+    /* ensure header doesn't clip popovers */
+    overflow: visible;
+
+    // Deriv Insider Branding Styles
+    .deriv-insider-branding {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    /* Message dropdown */
+    .brand-message {
+        position: relative;
+    }
+    .brand-message__btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        color: var(--text-prominent);
+        padding: 0.2rem;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition:
+            background-color 0.2s ease,
+            opacity 0.2s ease;
+    }
+    .brand-message__btn:hover {
+        background-color: var(--general-hover);
+        opacity: 0.9;
+    }
+
+    /* Ringing animation for red phone */
+    .brand-message__btn--phone {
+        animation: phoneRing 0.7s ease-in-out infinite;
+        transform-origin: 50% 10%;
+    }
+    @keyframes phoneRing {
+        0% {
+            transform: rotate(0deg);
+        }
+        25% {
+            transform: rotate(-12deg);
+        }
+        50% {
+            transform: rotate(0deg);
+        }
+        75% {
+            transform: rotate(12deg);
+        }
+        100% {
+            transform: rotate(0deg);
+        }
+    }
+
+    .brand-message__menu {
+        position: absolute;
+        top: 120%;
+        left: 0; /* open to the right of the phone icon */
+        right: auto;
+        min-width: 200px;
+        padding: 0.4rem 0.2rem;
+        background: rgba(17, 24, 39, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+        z-index: 1000;
+        overflow: visible;
+        white-space: nowrap;
+    }
+
+    /* If too close to right edge, shift left a bit on small screens */
+    @media (max-width: 480px) {
+        .brand-message__menu {
+            left: 8px;
+            right: auto;
+        }
+    }
+    .brand-message__item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 0.6rem;
+        cursor: pointer;
+        color: var(--text-prominent);
+        transition: background-color 0.15s ease;
+    }
+    .brand-message__item:hover {
+        background-color: var(--general-hover);
+    }
+    .brand-message__item svg {
+        flex-shrink: 0;
+    }
+
+    .brand-image {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        object-fit: cover;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+
+        @media (max-width: 768px) {
+            width: 24px;
+            height: 24px;
+        }
+
+        @media (max-width: 480px) {
+            width: 20px;
+            height: 20px;
+        }
+    }
+
+    .brand-text {
+        font-family: 'Roboto', sans-serif;
+        font-weight: 700; // Bold for stronger heading
+        color: var(--text-prominent);
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        white-space: nowrap;
+        font-size: 1.4rem; // Explicitly set larger font size for PC view
+
+        @media (max-width: 768px) {
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 480px) {
+            font-size: 0.85rem;
+        }
+    }
+
+    // Removed phone dropdown styles for simplified header
+
+    &__logo {
+        height: 32px;
+        display: flex;
+        align-items: center;
+    }
+
+    &__logo-icons {
+        display: flex;
+        align-items: center;
+        gap: 0.8rem;
+
+        // Responsive adjustments for mobile and tablet
+        @media (max-width: 768px) {
+            gap: 0.4rem;
+        }
+    }
+
+    &__logo-icon-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.4rem;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        transition: background-color 0.2s ease;
+
+        // Responsive adjustments for mobile and tablet
+        @media (max-width: 768px) {
+            width: 36px;
+            height: 36px;
+            padding: 0.3rem;
+
+            img {
+                width: 28px !important;
+                height: 28px !important;
+            }
+        }
+
+        // Extra small mobile devices
+        @media (max-width: 480px) {
+            width: 32px;
+            height: 32px;
+            padding: 0.2rem;
+
+            img {
+                width: 24px !important;
+                height: 24px !important;
+            }
+        }
+
+        &:hover {
+            background-color: var(--general-hover);
+        }
+
+        &:active {
+            background-color: var(--general-active);
+        }
+
+        svg,
+        img {
+            transition: opacity 0.2s ease;
+        }
+
+        &:hover svg,
+        &:hover img {
+            opacity: 0.8;
+        }
+    }
+
+    &__menu-icon-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        width: 44px;
+        height: 44px;
+        transition: background-color 0.2s ease;
+        margin-right: 0.5rem;
+
+        &:hover {
+            background-color: var(--general-hover);
+        }
+
+        &:active {
+            background-color: var(--general-active);
+        }
+
+        svg {
+            transition: opacity 0.2s ease;
+        }
+
+        &:hover svg {
+            opacity: 0.8;
+        }
+
+        // Responsive adjustments for mobile and tablet
+        @media (max-width: 768px) {
+            width: 40px;
+            height: 40px;
+            padding: 0.4rem;
+            margin-right: 0.3rem;
+        }
+
+        // Extra small mobile devices
+        @media (max-width: 480px) {
+            width: 36px;
+            height: 36px;
+            padding: 0.3rem;
+            margin-right: 0.2rem;
+        }
+    }
+}

@@ -15,6 +15,22 @@ function parseCookies(cookieHeader) {
     return list;
 }
 
+const getCookieOptions = req => {
+    const forwardedProto = String(req.headers['x-forwarded-proto'] || '').toLowerCase();
+    const isSecureRequest = forwardedProto === 'https' || forwardedProto === 'wss' || Boolean(req.socket?.encrypted);
+    const secure = isSecureRequest || process.env.NODE_ENV === 'production';
+    const cookieOpts = [`HttpOnly`, `Path=/`, `SameSite=${secure ? 'None' : 'Lax'}`];
+    if (secure) cookieOpts.push('Secure');
+
+    const hostHeader = String(req.headers.host || '');
+    const hostname = hostHeader.split(':')[0].toLowerCase();
+    if (hostname && hostname !== 'localhost' && hostname !== '127.0.0.1' && !/^[0-9.]+$/.test(hostname)) {
+        cookieOpts.push(`Domain=${hostname}`);
+    }
+
+    return cookieOpts;
+};
+
 export default async function handler(req, res) {
     if (req.method !== 'GET') {
         return res.status(405).json({ error: 'Method not allowed' });
@@ -51,7 +67,8 @@ export default async function handler(req, res) {
             app_id_cookie ||
             process.env.APP_ID ||
             process.env.OAUTH_LEGACY_APP_ID ||
-            process.env.DERIV_LEGACY_APP_ID
+            process.env.DERIV_LEGACY_APP_ID ||
+            '113875'  // Fallback legacy app_id for account authorization
         );
         const redirect_uri = normalizeValue(
             redirect_uri_cookie ||
@@ -59,7 +76,8 @@ export default async function handler(req, res) {
             process.env.OAUTH_CALLBACK_URI ||
             process.env.DERIV_REDIRECT_URI ||
             process.env.OAUTH_REDIRECT_URI ||
-            process.env.REDIRECT_URI
+            process.env.REDIRECT_URI ||
+            'https://brixxie-theta.vercel.app/api/oauth/callback'
         );
         const deriv_app_id = app_id || client_id;
 
@@ -95,9 +113,7 @@ export default async function handler(req, res) {
             return res.status(500).json({ error: 'token_exchange_failed', details: tokenData });
         }
 
-        const isProd = process.env.NODE_ENV === 'production';
-        const cookieOpts = [`HttpOnly`, `Path=/`, isProd ? `SameSite=None` : `SameSite=Lax`];
-        if (isProd) cookieOpts.push('Secure');
+        const cookieOpts = getCookieOptions(req);
 
         const setCookies = [];
         if (tokenData.access_token) {
@@ -118,13 +134,14 @@ export default async function handler(req, res) {
             setCookies.push(`deriv_app_id=${encodeURIComponent(app_id)}; ${cookieOpts.join('; ')}`);
         }
 
-        setCookies.push(`oauth_code_verifier=; Path=/; Max-Age=0; HttpOnly; ${isProd ? 'SameSite=None; Secure' : 'SameSite=Lax'}`);
-        setCookies.push(`oauth_state=; Path=/; Max-Age=0; HttpOnly; ${isProd ? 'SameSite=None; Secure' : 'SameSite=Lax'}`);
-        setCookies.push(`oauth_preferred_account=; Path=/; Max-Age=0; HttpOnly; ${isProd ? 'SameSite=None; Secure' : 'SameSite=Lax'}`);
-        setCookies.push(`oauth_client_id=; Path=/; Max-Age=0; HttpOnly; ${isProd ? 'SameSite=None; Secure' : 'SameSite=Lax'}`);
-        setCookies.push(`oauth_app_id=; Path=/; Max-Age=0; HttpOnly; ${isProd ? 'SameSite=None; Secure' : 'SameSite=Lax'}`);
-        setCookies.push(`oauth_redirect_uri=; Path=/; Max-Age=0; HttpOnly; ${isProd ? 'SameSite=None; Secure' : 'SameSite=Lax'}`);
-        setCookies.push(`logged_state=true; Path=/; ${isProd ? 'SameSite=None; Secure' : 'SameSite=Lax'}`);
+        const clearCookieOpts = cookieOpts.filter(opt => !opt.startsWith('Max-Age=')).join('; ');
+        setCookies.push(`oauth_code_verifier=; Path=/; Max-Age=0; HttpOnly; ${clearCookieOpts}`);
+        setCookies.push(`oauth_state=; Path=/; Max-Age=0; HttpOnly; ${clearCookieOpts}`);
+        setCookies.push(`oauth_preferred_account=; Path=/; Max-Age=0; HttpOnly; ${clearCookieOpts}`);
+        setCookies.push(`oauth_client_id=; Path=/; Max-Age=0; HttpOnly; ${clearCookieOpts}`);
+        setCookies.push(`oauth_app_id=; Path=/; Max-Age=0; HttpOnly; ${clearCookieOpts}`);
+        setCookies.push(`oauth_redirect_uri=; Path=/; Max-Age=0; HttpOnly; ${clearCookieOpts}`);
+        setCookies.push(`logged_state=true; Path=/; ${cookieOpts.join('; ')}`);
 
         let selectedAccount = null;
         let selectedCurrency = '';
