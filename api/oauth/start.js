@@ -60,16 +60,18 @@ export default async function handler(req, res) {
         const cookieOpts = [`HttpOnly`, `Path=/`, isProd ? `SameSite=None` : `SameSite=Lax`];
         if (isProd) cookieOpts.push('Secure');
 
+        const useClientId = Boolean(client_id);
+        const useAppId = !useClientId && Boolean(app_id);
+
         const cookies = [
             `oauth_code_verifier=${encodeURIComponent(code_verifier)}; ${cookieOpts.join('; ')}; Max-Age=600`,
             `oauth_state=${encodeURIComponent(state)}; ${cookieOpts.join('; ')}; Max-Age=600`,
             `oauth_redirect_uri=${encodeURIComponent(redirect_uri)}; ${cookieOpts.join('; ')}; Max-Age=600`,
         ];
 
-        if (client_id) {
+        if (useClientId) {
             cookies.push(`oauth_client_id=${encodeURIComponent(client_id)}; ${cookieOpts.join('; ')}; Max-Age=600`);
-        }
-        if (app_id) {
+        } else if (useAppId) {
             cookies.push(`oauth_app_id=${encodeURIComponent(app_id)}; ${cookieOpts.join('; ')}; Max-Age=600`);
         }
 

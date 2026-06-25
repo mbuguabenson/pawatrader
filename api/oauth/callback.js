@@ -61,6 +61,7 @@ export default async function handler(req, res) {
             process.env.OAUTH_REDIRECT_URI ||
             process.env.REDIRECT_URI
         );
+        const deriv_app_id = app_id || client_id;
 
         if ((!client_id && !app_id) || !redirect_uri) {
             return res.status(500).send('Server not configured for OAuth');
@@ -73,10 +74,12 @@ export default async function handler(req, res) {
             code_verifier,
         });
 
-        if (client_id) {
+        const useClientId = Boolean(client_id);
+        const useAppId = !useClientId && Boolean(app_id);
+
+        if (useClientId) {
             params.set('client_id', client_id);
-        }
-        if (app_id) {
+        } else if (useAppId) {
             params.set('app_id', app_id);
         }
 
@@ -132,7 +135,7 @@ export default async function handler(req, res) {
             const accountHeaders = {
                 Authorization: `Bearer ${tokenData.access_token}`,
                 'Content-Type': 'application/json',
-                ...(app_id ? { 'Deriv-App-ID': app_id } : {}),
+                ...(deriv_app_id ? { 'Deriv-App-ID': deriv_app_id } : {}),
             };
 
             const preferredAccount = cookies.oauth_preferred_account;

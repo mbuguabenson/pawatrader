@@ -21,22 +21,29 @@ export default async function handler(req, res) {
     try {
         const cookies = parseCookies(req.headers.cookie || '');
         const access_token = cookies.deriv_access_token;
+        const client_id = normalizeValue(
+            cookies.oauth_client_id ||
+            process.env.DERIV_OAUTH_CLIENT_ID ||
+            process.env.OAUTH_CLIENT_ID ||
+            process.env.CLIENT_ID
+        );
         const app_id = normalizeValue(
             cookies.deriv_app_id ||
             process.env.APP_ID ||
             process.env.OAUTH_LEGACY_APP_ID ||
             process.env.DERIV_LEGACY_APP_ID
         );
+        const deriv_app_id = app_id || client_id;
         const stored_selected_loginid = cookies.deriv_selected_loginid;
 
         if (!access_token) {
-            return res.status(200).json({ logged_in: false, app_id: app_id || null });
+            return res.status(200).json({ logged_in: false, app_id: deriv_app_id || null });
         }
 
         const account_headers = {
             Authorization: `Bearer ${access_token}`,
             'Content-Type': 'application/json',
-            ...(app_id ? { 'Deriv-App-ID': app_id } : {}),
+            ...(deriv_app_id ? { 'Deriv-App-ID': deriv_app_id } : {}),
         };
 
         let accounts = [];
