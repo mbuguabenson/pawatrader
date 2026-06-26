@@ -150,7 +150,7 @@ export default async function handler(req, res) {
                 process.env.DERIV_REDIRECT_URI ||
                 process.env.OAUTH_REDIRECT_URI ||
                 process.env.REDIRECT_URI ||
-                'https://brixxie-theta.vercel.app/api/oauth/callback'
+                'https://brixxie-theta.vercel.app/callback'
             );
         }
         
