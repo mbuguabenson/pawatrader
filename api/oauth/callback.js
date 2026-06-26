@@ -21,13 +21,14 @@ function verifyPKCEToken(token) {
     try {
         if (!token) return null;
         const [dataB64, signature] = token.split('.');
+        const dataBuffer = base64URLDecode(dataB64);
+        const data = JSON.parse(dataBuffer.toString());
         const secret = process.env.OAUTH_SECRET || 'fallback-secret-change-in-production';
         const hmac = crypto.createHmac('sha256', secret);
-        hmac.update(dataB64);
+        hmac.update(JSON.stringify(data));
         const expectedSig = base64URLEncode(hmac.digest());
         if (signature !== expectedSig) return null;
         
-        const data = JSON.parse(base64URLDecode(dataB64).toString());
         // Verify token is not older than 10 minutes
         if (Date.now() - data.ts > 600000) return null;
         return data;
