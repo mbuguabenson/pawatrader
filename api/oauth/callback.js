@@ -81,6 +81,9 @@ export default async function handler(req, res) {
             return res.status(400).send('Missing code or state');
         }
 
+        // Parse cookies always
+        const cookies = parseCookies(req.headers.cookie || '');
+
         // Try to extract PKCE data from state token first (new method)
         const pkceData = verifyPKCEToken(state);
         
@@ -96,7 +99,6 @@ export default async function handler(req, res) {
             console.log('[OAuth Callback] Using embedded PKCE token');
         } else {
             // Fallback: Extract from cookies (old method)
-            const cookies = parseCookies(req.headers.cookie || '');
             storedState = cookies.oauth_state;
             code_verifier = cookies.oauth_code_verifier;
             const client_id_cookie = cookies.oauth_client_id;
