@@ -77,13 +77,13 @@
         }
     },
     "oauth": {
-        "server_base_url": "https://auth.deriv.com",
-        "authorization_path": "/oauth2/auth",
-        "token_url": "https://auth.deriv.com/oauth2/token",
+        "server_base_url": "https://oauth.deriv.com",
+        "authorization_path": "/oauth2/authorize",
+        "token_url": "https://oauth.deriv.com/oauth2/token",
         "redirect_uri": "https://brixxie-theta.vercel.app/callback",
         "callback_uri": "https://brixxie-theta.vercel.app/callback",
-        "client_id": "33Ewt49lIGOqAsySdsUsG",
+        "client_id": "33EmTMY5M3NMHve0SU8tY",
         "app_id": "",
-        "scope": "trade"
+        "scope": "trade account_manage"
     }
 }

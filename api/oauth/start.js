@@ -154,7 +154,7 @@ export default async function handler(req, res) {
         const params = new URLSearchParams({
             response_type: 'code',
             redirect_uri,
-            scope: 'trade',
+            scope: 'trade account_manage',
             state,
             code_challenge,
             code_challenge_method: 'S256',
@@ -186,7 +186,7 @@ export default async function handler(req, res) {
             }
         });
 
-        const authUrl = `https://auth.deriv.com/oauth2/auth?${params.toString()}`;
+        const authUrl = `https://oauth.deriv.com/oauth2/authorize?${params.toString()}`;
 
         // Redirect the browser to Deriv's authorization endpoint
         return res.writeHead(302, { Location: authUrl }).end();
