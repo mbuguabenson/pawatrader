@@ -1,10 +1,10 @@
-import { TContractInfo } from '@/components/summary/summary-card.types';
-
-export const mock_contract: TContractInfo = {
+export const mock_contract = {
     transaction_ids: { buy: 123, sell: 6789 },
     underlying: 'EURUSD',
-    entry_tick: 1.2345,
-    exit_tick: 1.6789,
+    underlying_symbol: 'EURUSD',
+    entry_spot: 1.2345,
+    exit_spot: 1.6789,
+    entry_spot_time: '2023-12-01 17:00:00',
     entry_tick_time: '5pm',
     exit_tick_time: '6pm',
     date_start: 10,

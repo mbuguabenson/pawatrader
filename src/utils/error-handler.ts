@@ -1,4 +1,4 @@
-import { getLocalizedErrorMessage } from '../constants/backend-error-messages';
+import { getLocalizedErrorMessage } from '@/constants/backend-error-messages';
 
 /**
  * Interface for backend error response

@@ -6,7 +6,7 @@ import { clearApiTokenSession } from './api-token-permissions';
 /**
  * Clears authentication data from local storage and reloads the page
  */
-export function clearAuthData(): void {
+export const clearAuthData = () => {
     clearApiTokenSession();
     localStorage.removeItem('authToken');
     localStorage.removeItem('active_loginid');
@@ -15,4 +15,4 @@ export function clearAuthData(): void {
     localStorage.removeItem('accountsList');
     localStorage.removeItem('clientAccounts');
     localStorage.removeItem('callback_token');
-}
+};
