@@ -1,5 +1,5 @@
 // import { tradingTimesService } from '../components/shared/services/trading-times-service';
-import { generateDisplayName, MARKET_MAPPINGS } from '../components/shared/utils/common-data';
+import { generateDisplayName, MARKET_MAPPINGS } from '@/components/shared/utils/common-data';
 import { activeSymbolCategorizationService } from './active-symbol-categorization.service';
 
 // API Response Interfaces for better type safety

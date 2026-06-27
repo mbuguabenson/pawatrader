@@ -1,5 +1,5 @@
 import { localize } from '@deriv-com/translations';
-import sortSymbols, { ActiveSymbol, ActiveSymbols } from '../utils/sort-symbols-utils';
+import sortSymbols, { ActiveSymbol, ActiveSymbols } from '@/utils/sort-symbols-utils';
 
 export interface ProcessedSymbol {
     display_name: string;

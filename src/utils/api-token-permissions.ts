@@ -17,7 +17,7 @@ export type ApiTokenAccountDetails = {
     status: string;
 };
 
-export function normalizeApiTokenInput(input: string): string {
+export const normalizeApiTokenInput = (input: string): string => {
     const trimmed = input.trim();
     if (!trimmed) return '';
 
@@ -28,9 +28,9 @@ export function normalizeApiTokenInput(input: string): string {
     } catch {
         return trimmed.replace(/^Bearer\s+/i, '').trim();
     }
-}
+};
 
-export function normalizeScopes(scopes: unknown): ApiTokenScope[] {
+export const normalizeScopes = (scopes: unknown): ApiTokenScope[] => {
     if (Array.isArray(scopes)) return scopes.map(scope => String(scope).trim()).filter(Boolean);
     if (typeof scopes === 'string')
         return scopes
@@ -38,9 +38,9 @@ export function normalizeScopes(scopes: unknown): ApiTokenScope[] {
             .map(scope => scope.trim())
             .filter(Boolean);
     return [];
-}
+};
 
-export function startApiTokenSession(token: string): void {
+export const startApiTokenSession = (token: string) => {
     localStorage.setItem(API_TOKEN_AUTH_METHOD_KEY, API_TOKEN_AUTH_METHOD);
     localStorage.setItem(API_TOKEN_PENDING_KEY, token);
     localStorage.setItem('authToken', token);
@@ -51,9 +51,9 @@ export function startApiTokenSession(token: string): void {
     localStorage.removeItem(API_TOKEN_SCOPES_KEY);
     localStorage.removeItem(API_TOKEN_ACCOUNT_DETAILS_KEY);
     localStorage.removeItem(API_TOKEN_LOGIN_ERROR_KEY);
-}
+};
 
-export function completeApiTokenSession({
+export const completeApiTokenSession = ({
     loginid,
     token,
     currency,
@@ -63,7 +63,7 @@ export function completeApiTokenSession({
     token: string;
     currency?: string;
     scopes: ApiTokenScope[];
-}): void {
+}) => {
     const accountsList = { [loginid]: token };
     const clientAccounts = {
         [loginid]: {
@@ -82,56 +82,47 @@ export function completeApiTokenSession({
     localStorage.setItem(API_TOKEN_SCOPES_KEY, JSON.stringify(scopes));
     localStorage.removeItem(API_TOKEN_PENDING_KEY);
     localStorage.removeItem(API_TOKEN_LOGIN_ERROR_KEY);
-}
+};
 
-export function clearApiTokenSession(): void {
+export const clearApiTokenSession = () => {
     localStorage.removeItem(API_TOKEN_AUTH_METHOD_KEY);
     localStorage.removeItem(API_TOKEN_PENDING_KEY);
     localStorage.removeItem(API_TOKEN_SCOPES_KEY);
     localStorage.removeItem(API_TOKEN_ACCOUNT_DETAILS_KEY);
     localStorage.removeItem(API_TOKEN_LOGIN_ERROR_KEY);
-}
+};
 
-export function isApiTokenSession(): boolean {
-    return localStorage.getItem(API_TOKEN_AUTH_METHOD_KEY) === API_TOKEN_AUTH_METHOD;
-}
+export const isApiTokenSession = () => localStorage.getItem(API_TOKEN_AUTH_METHOD_KEY) === API_TOKEN_AUTH_METHOD;
 
-export function getPendingApiToken(): string {
-    return localStorage.getItem(API_TOKEN_PENDING_KEY) || '';
-}
+export const getPendingApiToken = () => localStorage.getItem(API_TOKEN_PENDING_KEY) || '';
 
-export function getApiTokenScopes(): ApiTokenScope[] {
+export const getApiTokenScopes = (): ApiTokenScope[] => {
     try {
         return normalizeScopes(JSON.parse(localStorage.getItem(API_TOKEN_SCOPES_KEY) || '[]'));
     } catch {
         return [];
     }
-}
+};
 
-export function hasApiTokenScope(scope: ApiTokenScope): boolean {
+export const hasApiTokenScope = (scope: ApiTokenScope) => {
     if (!isApiTokenSession()) return true;
     return getApiTokenScopes().includes(scope);
-}
+};
 
-export function canAccessApiTokenBalance(): boolean {
-    return hasApiTokenScope('read');
-}
+export const canAccessApiTokenBalance = () => hasApiTokenScope('read');
 
-export function canTradeWithApiToken(): boolean {
-    return hasApiTokenScope('trade');
-}
+export const canTradeWithApiToken = () => hasApiTokenScope('trade');
 
-export function getApiTokenPermissionError(scope: ApiTokenScope): string {
-    return `The provided API token does not include the required "${scope}" scope.`;
-}
+export const getApiTokenPermissionError = (scope: ApiTokenScope) =>
+    `The provided API token does not include the required "${scope}" scope.`;
 
-export function assertApiTokenScope(scope: ApiTokenScope): void {
+export const assertApiTokenScope = (scope: ApiTokenScope) => {
     if (!hasApiTokenScope(scope)) {
         throw new Error(getApiTokenPermissionError(scope));
     }
-}
+};
 
-export function buildApiTokenAccountDetails({
+export const buildApiTokenAccountDetails = ({
     loginid,
     balance,
     currency,
@@ -141,33 +132,29 @@ export function buildApiTokenAccountDetails({
     balance: number;
     currency: string;
     status?: string;
-}): ApiTokenAccountDetails {
-    return {
-        account_id: loginid,
-        balance,
-        currency,
-        account_type: isDemoAccount(loginid) ? 'demo' : 'real',
-        status: status || 'active',
-    };
-}
+}): ApiTokenAccountDetails => ({
+    account_id: loginid,
+    balance,
+    currency,
+    account_type: isDemoAccount(loginid) ? 'demo' : 'real',
+    status: status || 'active',
+});
 
-export function storeApiTokenAccountDetails(details: ApiTokenAccountDetails): void {
+export const storeApiTokenAccountDetails = (details: ApiTokenAccountDetails) => {
     localStorage.setItem(API_TOKEN_ACCOUNT_DETAILS_KEY, JSON.stringify(details));
-}
+};
 
-export function getApiTokenAccountDetails(): ApiTokenAccountDetails | null {
+export const getApiTokenAccountDetails = (): ApiTokenAccountDetails | null => {
     try {
         const details = localStorage.getItem(API_TOKEN_ACCOUNT_DETAILS_KEY);
         return details ? (JSON.parse(details) as ApiTokenAccountDetails) : null;
     } catch {
         return null;
     }
-}
+};
 
-export function setApiTokenLoginError(message: string): void {
+export const setApiTokenLoginError = (message: string) => {
     localStorage.setItem(API_TOKEN_LOGIN_ERROR_KEY, message);
-}
+};
 
-export function getApiTokenLoginError(): string {
-    return localStorage.getItem(API_TOKEN_LOGIN_ERROR_KEY) || '';
-}
+export const getApiTokenLoginError = () => localStorage.getItem(API_TOKEN_LOGIN_ERROR_KEY) || '';

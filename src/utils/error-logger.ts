@@ -243,7 +243,14 @@ class ErrorLoggerClass {
     }
 
     /**
- Log info message
+     * Log an info message
+     *
+     * @param category - Category/module name
+     * @param message - Info message
+     * @param data - Optional additional context
+     *
+     * @example
+     * ErrorLogger.info('Auth', 'User logged in', { loginid: 'CR123' });
      */
     info(category: string, message: string, data?: unknown): void {
         this.logToConsole(LogLevel.INFO, category, message, data);
@@ -251,6 +258,13 @@ class ErrorLoggerClass {
 
     /**
      * Log a debug message
+     *
+     * @param category - Category/module name
+     * @param message - Debug message
+     * @param data - Optional additional context
+     *
+     * @example
+     * ErrorLogger.debug('WebSocket', 'Connection state changed', { state: 'open' });
      */
     debug(category: string, message: string, data?: unknown): void {
         this.logToConsole(LogLevel.DEBUG, category, message, data);
@@ -258,6 +272,9 @@ class ErrorLoggerClass {
 
     /**
      * Set user context for error reporting
+     *
+     * @param userId - User ID
+     * @param email - Optional user email
      */
     setUserContext(userId: string, email?: string): void {
         if (this.config.errorReportingService) {
@@ -275,4 +292,91 @@ class ErrorLoggerClass {
     }
 }
 
+/**
+ * Singleton instance of ErrorLogger
+ */
 export const ErrorLogger = new ErrorLoggerClass();
+
+/**
+ * Example implementation of Sentry error reporting service
+ * Uncomment and implement when ready to integrate Sentry
+ */
+/*
+import * as Sentry from '@sentry/browser';
+
+class SentryErrorReportingService implements ErrorReportingService {
+    reportError(error: Error, context?: LogContext): void {
+        Sentry.captureException(error, {
+            extra: context,
+        });
+    }
+
+    reportWarning(message: string, context?: LogContext): void {
+        Sentry.captureMessage(message, {
+            level: 'warning',
+            extra: context,
+        });
+    }
+
+    setUserContext(userId: string, email?: string): void {
+        Sentry.setUser({
+            id: userId,
+            email,
+        });
+    }
+
+    clearUserContext(): void {
+        Sentry.setUser(null);
+    }
+}
+
+// Initialize Sentry and configure ErrorLogger
+Sentry.init({
+    dsn: 'YOUR_SENTRY_DSN',
+    environment: process.env.NODE_ENV,
+});
+
+ErrorLogger.setErrorReportingService(new SentryErrorReportingService());
+*/
+
+/**
+ * Example implementation of TrackJS error reporting service
+ * Uncomment and implement when ready to integrate TrackJS
+ */
+/*
+import { TrackJS } from 'trackjs';
+
+class TrackJSErrorReportingService implements ErrorReportingService {
+    reportError(error: Error, context?: LogContext): void {
+        TrackJS.track(error);
+        if (context) {
+            TrackJS.addMetadata('context', context);
+        }
+    }
+
+    reportWarning(message: string, context?: LogContext): void {
+        TrackJS.console.warn(message, context);
+    }
+
+    setUserContext(userId: string, email?: string): void {
+        TrackJS.configure({
+            userId,
+            metadata: { email },
+        });
+    }
+
+    clearUserContext(): void {
+        TrackJS.configure({
+            userId: undefined,
+            metadata: {},
+        });
+    }
+}
+
+// Initialize TrackJS and configure ErrorLogger
+TrackJS.install({
+    token: 'YOUR_TRACKJS_TOKEN',
+});
+
+ErrorLogger.setErrorReportingService(new TrackJSErrorReportingService());
+*/
