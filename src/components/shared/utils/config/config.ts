@@ -23,7 +23,7 @@ const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
     redirectUri: process.env.REDIRECT_URI || `${window.location.origin}/`,
     botsFolder: process.env.BOTS_FOLDER || DEFAULT_BOTS_FOLDER,
     includeLegacyAppIdInOAuth: true,
-    useLegacyOAuthLogin: false,
+    useLegacyOAuthLogin: true,
 };
 
 export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
@@ -33,7 +33,7 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
         redirectUri: 'https://brixxie-theta.vercel.app/',
         botsFolder: 'brixxie',
         includeLegacyAppIdInOAuth: true,
-        useLegacyOAuthLogin: false,
+        useLegacyOAuthLogin: true,
     },
 };
 
