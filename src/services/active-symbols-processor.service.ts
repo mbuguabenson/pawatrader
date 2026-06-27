@@ -1,4 +1,4 @@
-// import { tradingTimesService } from '../components/shared/services/trading-times-service';
+import { tradingTimesService } from '../components/shared/services/trading-times-service';
 import { generateDisplayName, MARKET_MAPPINGS } from '@/components/shared/utils/common-data';
 import { activeSymbolCategorizationService } from './active-symbol-categorization.service';
 
@@ -128,35 +128,13 @@ export class ActiveSymbolsProcessorService {
      */
     private async createLookupMaps() {
         try {
-            // const tradingTimes = await tradingTimesService.getTradingTimes();
+            const tradingTimes = await tradingTimesService.getTradingTimes();
 
-            // if (!tradingTimes?.markets || !Array.isArray(tradingTimes.markets)) {
-            //     throw new Error('Invalid trading times data structure');
-            // }
+            if (!tradingTimes?.markets || !Array.isArray(tradingTimes.markets)) {
+                throw new Error('Invalid trading times data structure');
+            }
 
-            // return this.processTradingTimesData(tradingTimes);
-
-            // Temporarily return fallback maps since we don't have the trading times service yet
-            const marketDisplayNames = new Map<string, string>();
-            const submarketDisplayNames = new Map<string, string>();
-            const symbolDisplayNames = new Map<string, string>();
-
-            const marketMapping = this.getMarketMapping();
-            const submarketMapping = this.getSubmarketMapping();
-
-            marketMapping.forEach((displayName, code) => {
-                marketDisplayNames.set(code, displayName);
-            });
-
-            submarketMapping.forEach((displayName, code) => {
-                submarketDisplayNames.set(code, displayName);
-            });
-
-            return {
-                marketDisplayNames,
-                submarketDisplayNames,
-                symbolDisplayNames,
-            };
+            return this.processTradingTimesData(tradingTimes);
         } catch (error) {
             console.warn('Failed to create lookup maps from trading times, using fallback mappings:', error);
 
