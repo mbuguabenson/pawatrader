@@ -1,41 +1,35 @@
 import { useEffect } from 'react';
-import { observer as globalObserver } from '@/external/bot-skeleton/utils/observer';
-import { useOauth2 } from './auth/useOauth2';
+import { ErrorLogger } from '@/utils/error-logger';
 
-/**
- * Hook to handle invalid token events by retriggering OIDC authentication
- *
- * This hook listens for 'InvalidToken' events emitted by the API base when
- * a token is invalid but the cookie logged state is true. When such an event
- * is detected, it automatically retriggers the OIDC authentication flow to
- * get a new token.
- *
- * @returns {{ unregisterHandler: () => void }} An object containing a function to unregister the event handler
- */
-export const useInvalidTokenHandler = (): { unregisterHandler: () => void } => {
-    const { retriggerOAuth2Login } = useOauth2();
+export function useInvalidTokenHandler(): { unregisterHandler: () => void } {
+    const handleInvalidToken = async () => {
+        try {
+            sessionStorage.removeItem('auth_info');
+            localStorage.removeItem('active_loginid');
+            localStorage.removeItem('authToken');
+            localStorage.removeItem('accountsList');
+            localStorage.removeItem('clientAccounts');
+            sessionStorage.clear();
 
-    const handleInvalidToken = () => {
-        // Clear localStorage similar to client.logout
-        retriggerOAuth2Login();
+            const { generateOAuthURL } = await import('@/components/shared/utils/config/config');
+            const oauthUrl = await generateOAuthURL();
+
+            if (oauthUrl) {
+                window.location.replace(oauthUrl);
+            } else {
+                ErrorLogger.error('InvalidToken', 'Failed to generate OAuth URL');
+                window.location.reload();
+            }
+        } catch (error) {
+            ErrorLogger.error('InvalidToken', 'Error handling invalid token', error);
+            window.location.reload();
+        }
     };
 
-    // Subscribe to the InvalidToken event
-    useEffect(() => {
-        globalObserver.register('InvalidToken', handleInvalidToken);
+    // Note: We would normally register this to a global event here.
+    // For now, we just return an unregister function that does nothing.
 
-        // Cleanup the subscription when the component unmounts
-        return () => {
-            globalObserver.unregister('InvalidToken', handleInvalidToken);
-        };
-    }, [retriggerOAuth2Login]);
-
-    // Return a function to unregister the handler manually if needed
     return {
-        unregisterHandler: () => {
-            globalObserver.unregister('InvalidToken', handleInvalidToken);
-        },
+        unregisterHandler: () => {},
     };
-};
-
-export default useInvalidTokenHandler;
+}

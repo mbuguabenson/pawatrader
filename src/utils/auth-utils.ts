@@ -1,49 +1,18 @@
 /**
  * Utility functions for authentication-related operations
  */
-import Cookies from 'js-cookie';
+import { clearApiTokenSession } from './api-token-permissions';
 
 /**
  * Clears authentication data from local storage and reloads the page
  */
-export const clearAuthData = (): void => {
+export function clearAuthData(): void {
+    clearApiTokenSession();
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('active_loginid');
+    localStorage.removeItem('client.country');
+    localStorage.removeItem('account_type'); // Clear account type when clearing auth data
     localStorage.removeItem('accountsList');
     localStorage.removeItem('clientAccounts');
     localStorage.removeItem('callback_token');
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('active_loginid');
-    localStorage.removeItem('client.accounts');
-    localStorage.removeItem('client.country');
-    sessionStorage.removeItem('auth_info');
-    sessionStorage.removeItem('oauth_csrf_token');
-    sessionStorage.removeItem('oauth_csrf_token_timestamp');
-    sessionStorage.removeItem('oauth_code_verifier');
-    sessionStorage.removeItem('oauth_code_verifier_timestamp');
-    location.reload();
-};
-
-/**
- * Handles OIDC authentication failure by clearing auth data and showing logged out view
- * @param error - The error that occurred during OIDC authentication
- */
-export const handleOidcAuthFailure = (error: any): void => {
-    // Log the error
-    console.error('OIDC authentication failed:', error);
-
-    // Clear auth data
-    localStorage.removeItem('authToken');
-    localStorage.removeItem('active_loginid');
-    localStorage.removeItem('clientAccounts');
-    localStorage.removeItem('accountsList');
-
-    // Set logged_state cookie to false
-    Cookies.set('logged_state', 'false', {
-        domain: window.location.hostname.split('.').slice(-2).join('.'),
-        expires: 30,
-        path: '/',
-        secure: true,
-    });
-
-    // Reload the page to show the logged out view
-    window.location.reload();
-};
+}

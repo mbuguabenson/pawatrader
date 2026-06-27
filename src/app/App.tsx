@@ -8,10 +8,9 @@ import ChunkLoader from '@/components/loader/chunk-loader';
 import RoutePromptDialog from '@/components/route-prompt-dialog';
 import { getBotsManifest, prefetchAllXmlInBackground } from '@/utils/freebots-cache';
 import { crypto_currencies_display_order, fiat_currencies_display_order } from '@/components/shared';
-import { forceUpdateAppId, getConfiguredClientId, getConfiguredAppId, getAuthRedirectUri } from '@/components/shared/utils/config/config';
 import { observer as globalObserver } from '@/external/bot-skeleton/utils/observer';
 import { OAuthTokenExchangeService } from '@/services/oauth-token-exchange.service';
-import { LegacyAccount, useOAuthCallback } from '@/hooks/auth/useOAuthCallback';
+import { LegacyAccount, useOAuthCallback } from '@/hooks/useOAuthCallback';
 import { StoreProvider } from '@/hooks/useStore';
 import Endpoint from '@/pages/endpoint';
 import { TAuthData } from '@/types/api-types';
@@ -190,25 +189,6 @@ function App() {
     }, [isProcessing, isValid, params.code, error, cleanupURL]);
 
     React.useEffect(() => {
-        // Force update app ID in localStorage to ensure we use the current config value
-        forceUpdateAppId();
-
-        // Diagnostic: log resolved OAuth config to help debug missing env vars
-        try {
-            const clientId = getConfiguredClientId();
-            const appId = getConfiguredAppId();
-            const redirectUri = getAuthRedirectUri();
-            const maskedClient = clientId ? `${clientId.slice(0, 4)}...${clientId.slice(-4)}` : 'not-configured';
-            const maskedApp = appId ? String(appId) : 'not-configured';
-            // eslint-disable-next-line no-console
-            console.info(`[OAuth Diagnostic] client_id: ${maskedClient}, app_id: ${maskedApp}, redirect_uri: ${redirectUri}`);
-        } catch (e) {
-            // ignore diagnostics failures
-        }
-
-        // Use the invalid token handler hook to automatically retrigger OIDC authentication
-        // when an invalid token is detected and the cookie logged state is true
-
         initSurvicate();
         window?.dataLayer?.push({ event: 'page_load' });
 
@@ -242,12 +222,10 @@ function App() {
         }
 
         return () => {
-            // Clean up the invalid token handler when the component unmounts
             const survicate_box = document.getElementById('survicate-box');
             if (survicate_box) {
                 survicate_box.style.display = 'none';
             }
-            // Note: We DON'T cleanup the replicator here - it should persist
         };
     }, []);
 
