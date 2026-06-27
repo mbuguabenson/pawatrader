@@ -148,10 +148,6 @@ export const V2GetActiveAccountId = () => {
     return null;
 };
 
-// Backward compatibility aliases
-export const V2GetActiveClientId = V2GetActiveAccountId;
-export const V2GetActiveToken = getToken;
-
 export const getToken = () => {
     const active_loginid = getLoginId();
     const pending_api_token = getPendingApiToken();
@@ -189,3 +185,7 @@ export const getToken = () => {
         account_id: active_loginid ?? undefined,
     };
 };
+
+// Backward compatibility aliases
+export const V2GetActiveClientId = V2GetActiveAccountId;
+export const V2GetActiveToken = getToken;

@@ -18,169 +18,39 @@ declare global {
     }
 }
 
-const restoreLoginFromServerSession = async () => {
+const restoreLoginFromLocalStorage = async () => {
     try {
-        const response = await fetch('/api/oauth/session', {
-            method: 'GET',
-            credentials: 'same-origin',
-            headers: {
-                'Content-Type': 'application/json',
-                Accept: 'application/json',
-            },
-        });
-
-        if (!response.ok) {
-            return false;
-        }
-
-        const sessionData = await response.json();
-
-        if (!sessionData.logged_in || !sessionData.access_token) {
-            return false;
-        }
-
-        const sessionToken = sessionData.access_token;
-        const preferredLoginId = sessionData.account_id;
-        const accountsList: Record<string, string> = {};
-        const clientAccounts: Record<
-            string,
-            { loginid: string; token: string; currency: string; account_type?: string; balance?: string }
-        > = {};
-
-        if (Array.isArray(sessionData.accounts) && sessionData.accounts.length) {
-            sessionData.accounts.forEach((account: any) => {
-                if (account.loginid) {
-                    accountsList[account.loginid] = sessionToken;
-                    clientAccounts[account.loginid] = {
-                        loginid: account.loginid,
-                        token: sessionToken,
-                        currency: account.currency || '',
-                        account_type: account.account_type || (account.is_virtual ? 'demo' : 'real'),
-                        balance: account.balance ?? '0',
-                    };
-                }
-            });
-        }
-
-        // Only add preferred account if it's not null and we don't already have accounts
-        if (!Object.keys(accountsList).length && preferredLoginId) {
-            accountsList[preferredLoginId] = sessionToken;
-            clientAccounts[preferredLoginId] = {
-                loginid: preferredLoginId,
-                token: sessionToken,
-                currency: sessionData.currency || '',
-                account_type: sessionData.account_type || 'real',
-                balance: sessionData.balance ?? '0',
-            };
-        }
-        try {
-            const deriv_accounts = (Array.isArray(sessionData.accounts) ? sessionData.accounts : []).map(a => ({
-                account_id: a.loginid || a.account_id,
-                balance: a.balance || '0',
-                currency: a.currency || '',
-                group: a.group || '',
-                status: a.status || '',
-                account_type: a.account_type || (a.is_virtual ? 'demo' : 'real'),
-            }));
-            if (deriv_accounts.length) {
-                DerivWSAccountsService.storeAccounts(deriv_accounts as any);
-            }
-        } catch (e) {
-            console.warn('Failed to store deriv accounts via service', e);
-        }
-        localStorage.setItem('authToken', sessionToken);
+        const authToken = localStorage.getItem('authToken');
+        const activeLoginId = localStorage.getItem('active_loginid');
         
-        // CRITICAL: Set active_loginid BEFORE api_base.init() so it can use it
-        if (preferredLoginId) {
-            localStorage.setItem('active_loginid', preferredLoginId);
-        } else if (Object.keys(accountsList).length > 0) {
-            // If no preferred ID, use the first account
-            const firstAccountId = Object.keys(accountsList)[0];
-            localStorage.setItem('active_loginid', firstAccountId);
+        if (!authToken || !activeLoginId) {
+            return false;
         }
 
-        if (sessionData.currency) {
-            sessionStorage.setItem('query_param_currency', sessionData.currency);
-        }
-
-        // Store auth_info centrally for client-side services
+        // Restore auth_info from sessionStorage
         try {
-            if (sessionData.access_token) {
+            const authInfo = OAuthTokenExchangeService.getAuthInfo();
+            if (authInfo?.access_token) {
+                // Already has valid auth info
+            } else {
                 OAuthTokenExchangeService.setAuthInfo({
-                    access_token: sessionData.access_token,
-                    token_type: sessionData.token_type || 'bearer',
-                    expires_in: sessionData.expires_in || 3600,
-                    expires_at: Date.now() + (sessionData.expires_in || 3600) * 1000,
-                    scope: sessionData.scope,
-                    refresh_token: sessionData.refresh_token,
+                    access_token: authToken,
+                    token_type: 'bearer',
+                    expires_in: 3600,
+                    expires_at: Date.now() + 3600 * 1000,
                 });
             }
         } catch (e) {
-            console.warn('Failed to set auth_info via OAuthTokenExchangeService', e);
+            console.warn('Failed to restore auth_info', e);
         }
 
         // Now initialize API with active_loginid already set
         await api_base.init(true);
 
         const authorize = api_base.account_info as any;
-        const discoveredAccounts = authorize?.account_list || [];
-        
-        // If no accounts discovered via api_base, that's okay - store what we have
-        // The accounts may be populated later when the API connection is ready
-        const accountsToStore = discoveredAccounts.length > 0 
-            ? discoveredAccounts 
-            : (Array.isArray(sessionData.accounts) && sessionData.accounts.length > 0 
-                ? sessionData.accounts 
-                : []);
-
-        let selectedLoginId = localStorage.getItem('active_loginid') || '';
-        const authorizedAccountsList: Record<string, string> = {};
-        const authorizedClientAccounts: Record<
-            string,
-            { loginid: string; token: string; currency: string; account_type?: string; balance?: string }
-        > = {};
-
-        if (accountsToStore.length > 0) {
-            accountsToStore.forEach((account: any) => {
-                authorizedAccountsList[account.loginid] = sessionToken;
-                authorizedClientAccounts[account.loginid] = {
-                    loginid: account.loginid,
-                    token: sessionToken,
-                    currency: account.currency || '',
-                    account_type: account.account_type || (account.is_virtual ? 'demo' : 'real'),
-                    balance: account.balance ?? '0',
-                };
-            });
-
-            // Validate selectedLoginId is still in discovered accounts
-            if (selectedLoginId && !accountsToStore.some((acc: any) => acc.loginid === selectedLoginId)) {
-                selectedLoginId = accountsToStore[0]?.loginid || '';
-            }
-        } else if (preferredLoginId) {
-            // Fall back to the preferred login ID from session if we have it
-            selectedLoginId = preferredLoginId;
-            authorizedAccountsList[preferredLoginId] = sessionToken;
-            authorizedClientAccounts[preferredLoginId] = {
-                loginid: preferredLoginId,
-                token: sessionToken,
-                currency: sessionData.currency || '',
-                account_type: sessionData.account_type || 'real',
-                balance: sessionData.balance ?? '0',
-            };
+        if (authorize?.country) {
+            localStorage.setItem('client.country', authorize.country);
         }
-
-        localStorage.setItem('accountsList', JSON.stringify(authorizedAccountsList));
-        localStorage.setItem('clientAccounts', JSON.stringify(authorizedClientAccounts));
-        
-        // Ensure active_loginid is set from discovered accounts
-        if (selectedLoginId) {
-            localStorage.setItem('active_loginid', selectedLoginId);
-            const selectedAccount = authorizedClientAccounts[selectedLoginId];
-            if (selectedAccount?.account_type) {
-                localStorage.setItem('account_type', selectedAccount.account_type);
-            }
-        }
-        localStorage.setItem('client.country', authorize?.country || sessionData.currency || '');
 
         Cookies.set('logged_state', 'true', {
             domain: window.location.hostname,
@@ -191,7 +61,7 @@ const restoreLoginFromServerSession = async () => {
 
         return true;
     } catch (error) {
-        console.error('Restoring server-side OAuth session failed:', error);
+        console.error('Restoring login from localStorage failed:', error);
         clearAuthData();
         return false;
     }
@@ -320,8 +190,8 @@ export const AuthWrapper = () => {
         const initializeAuth = async () => {
             if (!loginInfo.length) {
                 const hasAccounts = Boolean(localStorage.getItem('accountsList') || localStorage.getItem('authToken'));
-                if (!hasAccounts) {
-                    await restoreLoginFromServerSession();
+                if (hasAccounts) {
+                    await restoreLoginFromLocalStorage();
                 }
             }
 
