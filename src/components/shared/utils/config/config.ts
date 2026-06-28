@@ -42,11 +42,10 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
         includeLegacyAppIdInOAuth: true,
     },
     // Production domain: www.profithub.co.ke
-    // IMPORTANT: Must register redirect_uri 'https://www.profithub.co.ke/callback' 
-    // with Deriv OAuth app dashboard for this to work in production
+    // Uses dedicated ProfitHub Deriv OAuth app (separate from Brixxie)
     'www.profithub.co.ke': {
-        clientId: '33EmTMY5M3NMHve0SU8tY', // Brixxie's CLIENT_ID
-        appId: '80058', // Brixxie's APP_ID
+        clientId: '33tEt49lG0qA5Sdisu6', // ProfitHub CLIENT_ID from Deriv app
+        appId: '33tEt49lG0qA5Sdisu6', // ProfitHub APP_ID from Deriv app
         redirectUri: 'https://www.profithub.co.ke/callback',
         botsFolder: 'profithub',
         includeLegacyAppIdInOAuth: true,
