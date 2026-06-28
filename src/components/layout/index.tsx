@@ -15,7 +15,8 @@ import './layout.scss';
 const Layout = () => {
     const { isDesktop } = useDevice();
 
-    const isCallbackPage = window.location.pathname === '/callback';
+    const isCallbackPage =
+        window.location.pathname === '/callback' || window.location.pathname === '/api/oauth/callback';
     const { onRenderTMBCheck, is_tmb_enabled: tmb_enabled_from_hook, isTmbEnabled } = useTMB();
     const is_tmb_enabled = useMemo(
         () => window.is_tmb_enabled === true || tmb_enabled_from_hook,

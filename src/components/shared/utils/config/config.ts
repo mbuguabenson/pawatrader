@@ -8,32 +8,29 @@ import brandConfig from '@/../brand.config.json';
 // =============================================================================
 
 interface DomainConfig {
-    clientId: string; // OAuth 2.0 CLIENT_ID (new OAuth app)
-    appId: string; // Legacy Deriv APP_ID for intelligent platform routing
-    redirectUri: string; // MUST match the redirect URL registered in the OAuth app exactly
+    clientId: string; // OAuth PKCE CLIENT_ID registered with Deriv
+    appId: string; // Deriv APP_ID (used for WebSocket & legacy app_id param)
+    redirectUri: string; // MUST exactly match the redirect URI registered in the OAuth app
     botsFolder: string; // Public folder used by Best Bots XML loading for this domain
-    includeLegacyAppIdInOAuth: boolean; // Only enable when the legacy app redirects to this domain
-    useLegacyOAuthLogin: boolean; // Use old OAuth app_id login when OAuth2 client setup is not valid yet
+    includeLegacyAppIdInOAuth: boolean; // Append app_id to the PKCE auth URL (for Deriv routing)
 }
 
 const DEFAULT_BOTS_FOLDER = 'brixxie';
 const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
     clientId: process.env.CLIENT_ID || '33EmTMY5M3NMHve0SU8tY',
     appId: process.env.APP_ID || '71937',
-    redirectUri: process.env.REDIRECT_URI || `${window.location.origin}/`,
+    redirectUri: process.env.REDIRECT_URI || `${window.location.origin}/api/oauth/callback`,
     botsFolder: process.env.BOTS_FOLDER || DEFAULT_BOTS_FOLDER,
     includeLegacyAppIdInOAuth: true,
-    useLegacyOAuthLogin: false,
 };
 
 export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
     'brixxie-theta.vercel.app': {
         clientId: '33EmTMY5M3NMHve0SU8tY',
         appId: '71937',
-        redirectUri: 'https://brixxie-theta.vercel.app/',
+        redirectUri: 'https://brixxie-theta.vercel.app/api/oauth/callback',
         botsFolder: 'brixxie',
         includeLegacyAppIdInOAuth: true,
-        useLegacyOAuthLogin: false,
     },
 };
 
@@ -262,19 +259,7 @@ export async function generateOAuthURL(prompt?: string, domainConfig = getDomain
     try {
         const { clientId, appId, redirectUri, includeLegacyAppIdInOAuth } = domainConfig;
 
-        if (domainConfig.useLegacyOAuthLogin && appId) {
-            // Include redirect_uri so Deriv sends users back to this app (not home.deriv.com)
-            const params = new URLSearchParams({
-                app_id: appId,
-                redirect_uri: redirectUri,
-            });
-            if (prompt) {
-                params.set('prompt', prompt);
-            }
-            return `https://oauth.deriv.com/oauth2/authorize?${params.toString()}`;
-        }
-
-        // Use brand config for the OAuth2 base URL
+        // Always use PKCE flow — legacy app_id-only OAuth is removed
         const isProd = isProduction();
         const hostname = brandConfig.platform.auth2_url[isProd ? 'production' : 'staging'];
 

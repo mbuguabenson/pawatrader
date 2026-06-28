@@ -61,6 +61,7 @@ const router = createBrowserRouter(
             <Route path='dashboard' element={<AppRoot />} />
             <Route path='endpoint' element={<Endpoint />} />
             <Route path='callback' element={<CallbackPage />} />
+            <Route path='api/oauth/callback' element={<CallbackPage />} />
             {/* Catch-all route - redirect to home for any invalid routes */}
             <Route path='*' element={<Navigate to='/' replace />} />
         </Route>
