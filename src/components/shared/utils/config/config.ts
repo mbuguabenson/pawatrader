@@ -75,9 +75,10 @@ export function isLocal(): boolean {
 // =============================================================================
 
 const getDefaultServerURL = (): string => {
-    const isProd = isProduction();
-    const wsUrl = `${brandConfig.platform.derivws.url[isProd ? 'production' : 'staging']}options/ws/public`;
-    return wsUrl;
+    const { appId } = getDomainConfig();
+    // Use the standard public Deriv WebSocket endpoint as fallback.
+    // The brandConfig.derivws.url is the REST API base and cannot be used directly as a WS URL.
+    return `wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`;
 };
 
 const getLegacyServerURL = (): string => {

@@ -68,13 +68,32 @@ const Matches = observer(() => {
         if (active_tab !== DBOT_TABS.MATCHES) return;
 
         const init = async () => {
-            const api = await generateDerivApiInstance();
+            let api;
+            try {
+                api = await generateDerivApiInstance();
+            } catch (connErr) {
+                console.error('[Matches] Failed to create API instance:', connErr);
+                return;
+            }
             apiRef.current = api;
+
+            // Wait for the WebSocket to be OPEN before calling active_symbols
+            await new Promise(resolve => {
+                const ws = api?.connection;
+                if (!ws || ws.readyState === WebSocket.OPEN) {
+                    resolve();
+                    return;
+                }
+                const onOpen = () => { ws.removeEventListener('open', onOpen); resolve(); };
+                ws.addEventListener('open', onOpen);
+                // Safety timeout — don't block forever
+                setTimeout(resolve, 5000);
+            });
 
             // Load symbols - Volatility and Jump Index markets
             try {
                 const { active_symbols, error } = await api.send({ active_symbols: 'brief' });
-                if (error) throw error;
+                if (error) throw new Error(JSON.stringify(error));
                 const syn = (active_symbols || [])
                     .filter(s => {
                         // Include all Volatility Index markets, including standard and (1s) variants
@@ -90,12 +109,15 @@ const Matches = observer(() => {
                         const isOneB = /\(1s\)/i.test(b.display_name);
                         return Number(isOneA) - Number(isOneB);
                     });
+                if (syn.length === 0) {
+                    console.warn('[Matches] active_symbols returned 0 volatility markets. Total symbols received:', active_symbols?.length);
+                }
                 setSymbols(syn);
                 if (syn[0]?.symbol) {
                     setMarket(prev => prev || syn[0].symbol);
                 }
             } catch (e) {
-                console.error('Error loading symbols:', e);
+                console.error('[Matches] Error loading symbols:', e);
             }
         };
 
