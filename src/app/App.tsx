@@ -8,7 +8,6 @@ import ChunkLoader from '@/components/loader/chunk-loader';
 import RoutePromptDialog from '@/components/route-prompt-dialog';
 import { getBotsManifest, prefetchAllXmlInBackground } from '@/utils/freebots-cache';
 import { crypto_currencies_display_order, fiat_currencies_display_order } from '@/components/shared';
-import { observer as globalObserver } from '@/external/bot-skeleton/utils/observer';
 import { OAuthTokenExchangeService } from '@/services/oauth-token-exchange.service';
 import { LegacyAccount, useOAuthCallback } from '@/hooks/useOAuthCallback';
 import { StoreProvider } from '@/hooks/useStore';
