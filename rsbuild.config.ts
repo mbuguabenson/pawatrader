@@ -56,6 +56,7 @@ export default defineConfig({
                 VITE_OAUTH_CLIENT_ID: JSON.stringify(process.env.VITE_OAUTH_CLIENT_ID),
                 VITE_OAUTH_REDIRECT_URI: JSON.stringify(process.env.VITE_OAUTH_REDIRECT_URI),
                 VITE_OAUTH_CALLBACK_URI: JSON.stringify(process.env.VITE_OAUTH_CALLBACK_URI),
+                REDIRECT_URI: JSON.stringify(process.env.REDIRECT_URI),
             },
         },
         alias: {

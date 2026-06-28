@@ -19,7 +19,11 @@ const DEFAULT_BOTS_FOLDER = 'brixxie';
 const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
     clientId: process.env.CLIENT_ID || '33EmTMY5M3NMHve0SU8tY',
     appId: process.env.APP_ID || '80058',
-    redirectUri: process.env.REDIRECT_URI || `${window.location.origin}/api/oauth/callback`,
+    redirectUri:
+        process.env.REDIRECT_URI ||
+        process.env.DERIV_REDIRECT_URI ||
+        process.env.OAUTH_REDIRECT_URI ||
+        `${window.location.origin}/api/oauth/callback`,
     botsFolder: process.env.BOTS_FOLDER || DEFAULT_BOTS_FOLDER,
     includeLegacyAppIdInOAuth: true,
 };
