@@ -42,11 +42,12 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
         includeLegacyAppIdInOAuth: true,
     },
     // Production domain: www.profithub.co.ke
-    // IMPORTANT: Must register this redirect_uri with Deriv OAuth app dashboard
+    // IMPORTANT: Must register redirect_uri 'https://www.profithub.co.ke/callback' 
+    // with Deriv OAuth app dashboard for this to work in production
     'www.profithub.co.ke': {
-        clientId: process.env.PROFITHUB_CLIENT_ID || 'YOUR_PROFITHUB_CLIENT_ID',
-        appId: process.env.PROFITHUB_APP_ID || '80058',
-        redirectUri: process.env.PROFITHUB_REDIRECT_URI || 'https://www.profithub.co.ke/callback',
+        clientId: '33EmTMY5M3NMHve0SU8tY', // Brixxie's CLIENT_ID
+        appId: '80058', // Brixxie's APP_ID
+        redirectUri: 'https://www.profithub.co.ke/callback',
         botsFolder: 'profithub',
         includeLegacyAppIdInOAuth: true,
     },
