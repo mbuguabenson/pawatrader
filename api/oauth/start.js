@@ -102,7 +102,7 @@ export default async function handler(req, res) {
             process.env.DERIV_REDIRECT_URI ||
             process.env.OAUTH_REDIRECT_URI ||
             process.env.REDIRECT_URI ||
-            'https://brixxie-theta.vercel.app/callback'
+            'https://brixxie-theta.vercel.app/api/oauth/callback'
         );
 
         if ((!client_id && !app_id) || !redirect_uri) {
