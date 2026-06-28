@@ -79,9 +79,7 @@ const SpeedBot = observer(() => {
     // UI toggles and counters
     const [altEvenOdd, setAltEvenOdd] = useState<boolean>(false);
     const [altOnLoss, setAltOnLoss] = useState<boolean>(false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [consecWins, setConsecWins] = useState<number>(0);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [consecLosses, setConsecLosses] = useState<number>(0);
 
     const [is_running, setIsRunning] = useState(false);
@@ -379,10 +377,14 @@ const SpeedBot = observer(() => {
                                             lossStreak = 0;
                                             step = 0;
                                             setStake(String(baseStake));
+                                            setConsecWins(w => w + 1);
+                                            setConsecLosses(0);
                                         } else {
                                             lastOutcomeWasLossRef.current = true;
                                             lossStreak++;
                                             step = Math.min(step + 1, 50);
+                                            setConsecLosses(l => l + 1);
+                                            setConsecWins(0);
                                         }
                                     }
                                 }
