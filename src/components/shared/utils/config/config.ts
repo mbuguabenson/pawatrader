@@ -18,7 +18,7 @@ interface DomainConfig {
 const DEFAULT_BOTS_FOLDER = 'brixxie';
 const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
     clientId: process.env.CLIENT_ID || '33EmTMY5M3NMHve0SU8tY',
-    appId: process.env.APP_ID || '71937',
+    appId: process.env.APP_ID || '80058',
     redirectUri: process.env.REDIRECT_URI || `${window.location.origin}/api/oauth/callback`,
     botsFolder: process.env.BOTS_FOLDER || DEFAULT_BOTS_FOLDER,
     includeLegacyAppIdInOAuth: true,
@@ -27,7 +27,7 @@ const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
 export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
     'brixxie-theta.vercel.app': {
         clientId: '33EmTMY5M3NMHve0SU8tY',
-        appId: '71937',
+        appId: '80058',
         redirectUri: 'https://brixxie-theta.vercel.app/api/oauth/callback',
         botsFolder: 'brixxie',
         includeLegacyAppIdInOAuth: true,
@@ -272,10 +272,10 @@ export async function generateOAuthURL(prompt?: string, domainConfig = getDomain
             storeCodeVerifier(codeVerifier);
 
             const params = new URLSearchParams({
-                scope: 'trade account_manage',
                 response_type: 'code',
                 client_id: clientId,
                 redirect_uri: redirectUri,
+                scope: 'trade account_manage',
                 state: csrfToken,
                 code_challenge: codeChallenge,
                 code_challenge_method: 'S256',
@@ -289,7 +289,7 @@ export async function generateOAuthURL(prompt?: string, domainConfig = getDomain
                 params.set('app_id', appId);
             }
 
-            return `${hostname}auth?${params.toString()}`;
+            return `${hostname}authorize?${params.toString()}`;
         }
     } catch (error) {
         console.error('Error generating OAuth URL:', error);

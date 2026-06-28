@@ -1,56 +1,141 @@
 # OAuth 2.0 Authorization Code + PKCE (Deriv)
 
-Summary
+This project supports a Deriv OAuth 2.0 Authorization Code + PKCE flow.
+It includes both a server-side redirect flow in `api/oauth/start.js` / `api/oauth/callback.js` and a client-side PKCE helper in `src/components/shared/utils/config/config.ts`.
 
-- Implements a server-side Authorization Code + PKCE flow for Deriv using the endpoints:
-    - Authorization: https://auth.deriv.com/oauth2/auth
-    - Token: https://auth.deriv.com/oauth2/token
+## Summary
 
-Endpoints added
+- Primary authorize endpoint: `https://oauth.deriv.com/oauth2/authorize`
+- Primary token endpoint: `https://oauth.deriv.com/oauth2/token`
+- Scope used by default: `trade account_manage`
+- The flow supports either `client_id` (OAuth PKCE) or legacy `app_id` fallback
 
-- `/api/oauth/start` (GET): generates `code_verifier` and `state`, stores them in HttpOnly cookies, and redirects the browser to Deriv's authorization endpoint. You may pass `client_id` and `redirect_uri` as query parameters to override server env vars.
-- `/api/oauth/callback` (GET): Deriv will redirect here. This endpoint validates the `state`, exchanges the `code` for tokens using the stored `code_verifier`, sets HttpOnly cookies for tokens, and redirects the user back to `/`.
+## Key files
 
-Environment variables
+- `api/oauth/start.js` — starts the OAuth flow, generates PKCE values, stores them in secure cookies, and redirects to Deriv
+- `api/oauth/callback.js` — handles the redirect callback, validates state, exchanges code for tokens, sets cookies, and redirects back to `/`
+- `src/components/shared/utils/config/config.ts` — client-side helper functions for PKCE and OAuth URL generation
+- `src/components/layout/header/header.tsx` — login/signup buttons that redirect to `generateOAuthURL()`
+- `src/pages/callback/callback-page.tsx` — optional client-side callback page that can exchange the code using `OAuthTokenExchangeService`
 
-- `DERIV_OAUTH_CLIENT_ID` - (optional) new OAuth client id from the developer portal
-- `DERIV_LEGACY_APP_ID` - (optional) numeric legacy app_id (will be included in cookies for later API calls)
-- `DERIV_REDIRECT_URI` - (required) the exact redirect URL registered in the developer portal (must match the callback)
-- `NODE_ENV` - set to `production` to enable `Secure` cookie flag
+## OAuth flow
 
-Frontend: start the flow
+### 1. Start OAuth
 
-- Trigger the flow by redirecting the browser to the start endpoint. Example:
+The public login button in `src/components/layout/header/header.tsx` calls `generateOAuthURL()` from `src/components/shared/utils/config/config.ts`.
+This function:
 
-```js
-// Replace with your client id / redirect if needed
-const clientId = 'YOUR_CLIENT_ID';
-const redirectUri = 'https://your.app.com/api/oauth/callback';
-window.location.href = `/api/oauth/start?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}`;
+- generates a random `code_verifier`
+- computes `code_challenge = SHA256(code_verifier)` in base64url format
+- generates a random CSRF `state`
+- stores `oauth_code_verifier` and `oauth_csrf_token` in `sessionStorage`
+- returns a Deriv authorization URL
+
+The authorization URL includes:
+
+- `response_type=code`
+- `client_id` (from `DOMAIN_CONFIG` or `process.env`)
+- `redirect_uri` (from `DOMAIN_CONFIG` or env)
+- `scope=trade account_manage`
+- `state`
+- `code_challenge`
+- `code_challenge_method=S256`
+- optionally `app_id`
+
+### 2. Redirect to Deriv
+
+The browser is redirected to Deriv's OAuth endpoint:
+
+`https://oauth.deriv.com/oauth2/authorize?…`
+
+Deriv authenticates the user and returns to the configured callback URL with `code` and `state`.
+
+### 3. Handle callback
+
+The server-side callback route is `api/oauth/callback.js`.
+It supports two modes:
+
+- new mode: PKCE parameters are embedded inside the `state` token and verified server-side
+- fallback mode: the callback reads `oauth_state`, `oauth_code_verifier`, `oauth_client_id`, and `oauth_redirect_uri` from cookies
+
+The callback handler then:
+
+- verifies the returned `state`
+- recovers the stored `code_verifier`
+- determines `client_id` or legacy `app_id`
+- determines the `redirect_uri`
+- posts to `https://oauth.deriv.com/oauth2/token`
+- exchanges `code`, `code_verifier`, `redirect_uri`, and `client_id`/`app_id`
+
+### 4. Store tokens and session data
+
+On successful token exchange, `api/oauth/callback.js` sets secure cookies:
+
+- `deriv_access_token`
+- `deriv_refresh_token`
+- `deriv_token_expires`
+- `deriv_app_id` (if legacy app ID is used)
+- `deriv_selected_loginid` (if available)
+- `deriv_account_type`
+- `deriv_account_currency`
+- `logged_state=true`
+
+It also clears PKCE cookies:
+
+- `oauth_code_verifier`
+- `oauth_state`
+- `oauth_preferred_account`
+- `oauth_client_id`
+- `oauth_app_id`
+- `oauth_redirect_uri`
+
+Finally, it redirects the browser back to `/` by default or returns JSON when requested.
+
+## Environment variables
+
+The server flow reads these environment variables:
+
+- `DERIV_OAUTH_CLIENT_ID` / `OAUTH_CLIENT_ID` / `CLIENT_ID`
+- `DERIV_LEGACY_APP_ID` / `APP_ID` / `OAUTH_LEGACY_APP_ID`
+- `DERIV_REDIRECT_URI` / `OAUTH_REDIRECT_URI` / `REDIRECT_URI`
+- `DERIV_OAUTH_CALLBACK_URI` / `OAUTH_CALLBACK_URI` (fallback)
+- `OAUTH_SECRET` — used to sign the PKCE state token
+- `NODE_ENV` or `VERCEL` for cookie security behavior
+
+## Frontend login trigger
+
+In `src/components/layout/header/header.tsx`, the login button calls:
+
+```ts
+window.location.replace(await generateOAuthURL());
 ```
 
-What happens on callback
+This redirects the browser directly to the Deriv auth URL built by `generateOAuthURL()`.
 
-- Deriv redirects back to `/api/oauth/callback?code=...&state=...`.
-- Server verifies `state` against the session cookie and exchanges the code for tokens using PKCE (sends original `code_verifier`).
-- On success the server sets HttpOnly cookies: `deriv_access_token`, `deriv_refresh_token`, `deriv_token_expires`, and `deriv_app_id` (if configured). The PKCE cookies are cleared.
+## Client-side callback support
 
-Using the tokens and legacy `app_id`
+The repository also includes a client-side callback page at `src/pages/callback/callback-page.tsx`.
+It can exchange the authorization code using `OAuthTokenExchangeService.exchangeCodeForToken(code)` and `getCodeVerifier()`.
 
-- Server-side API calls to Deriv should read `deriv_access_token` from the request cookies and include the legacy `deriv_app_id` when the API requires it.
-- Example server-side request headers:
+## Legacy token / WebSocket integration
 
-```
-Authorization: Bearer <access_token>
-X-APP-ID: <legacy_app_id>
-```
+The project uses `getSocketURL()` in `src/components/shared/utils/config/config.ts` to decide whether to use:
 
-Security notes
+- authenticated WebSocket URL via `DerivWSAccountsService.getAuthenticatedWebSocketURL(access_token)`
+- legacy WebSocket URL with `app_id`
 
-- Tokens are stored as HttpOnly cookies to avoid access from client-side scripts. Adjust storage and session handling to match your app's security model.
-- Ensure `DERIV_REDIRECT_URI` exactly matches the URL registered in the developer portal.
+If a PKCE access token exists in session storage, the authenticated WebSocket URL is preferred.
 
-Files added
+## Notes
 
-- [api/oauth/start.js](api/oauth/start.js)
-- [api/oauth/callback.js](api/oauth/callback.js)
+- This repo stores PKCE verifier/state in `sessionStorage` for browser-side flows.
+- Server-side cookie storage is used by the `api/oauth/*` endpoints.
+- Ensure `redirect_uri` exactly matches the callback URL configured in Deriv.
+
+## Files referenced
+
+- `api/oauth/start.js`
+- `api/oauth/callback.js`
+- `src/components/shared/utils/config/config.ts`
+- `src/components/layout/header/header.tsx`
+- `src/pages/callback/callback-page.tsx`

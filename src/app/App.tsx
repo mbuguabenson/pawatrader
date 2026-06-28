@@ -48,7 +48,7 @@ const router = createBrowserRouter(
                 </Suspense>
             }
             errorElement={
-                <div style={{ padding: '20px', textAlign: 'center' }}>
+                <div className='app-error-state'>
                     <h1>🚨 Application Error</h1>
                     <p>Something went wrong. Please check the console for more details.</p>
                     <button onClick={() => window.location.reload()}>Reload Page</button>
