@@ -1,5 +1,5 @@
 {
-  "brand_name": "Brixxie",
+  "brand_name": "ProfitHub",
   "brand_domain": "www.profithub.co.ke",
   "brand_hostname": {
     "staging": "brixxie-theta.vercel.app",
@@ -58,14 +58,14 @@
     "css_variable_prefix": "--brand"
   },
   "platform": {
-    "name": "Brixxie Bot",
+    "name": "ProfitHub",
     "logo": {
       "type": "component",
       "component_name": "BrandLogo",
-      "alt_text": "Brixxie",
+      "alt_text": "ProfitHub",
       "link_url": "/",
       "show_text": false,
-      "text": "Brixxie"
+      "text": "ProfitHub"
     },
     "footer": {
       "enable_language_settings": false,

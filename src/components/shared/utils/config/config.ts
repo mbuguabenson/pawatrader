@@ -15,7 +15,7 @@ interface DomainConfig {
     includeLegacyAppIdInOAuth: boolean; // Append app_id to the PKCE auth URL (for Deriv routing)
 }
 
-const DEFAULT_BOTS_FOLDER = 'brixxie';
+const DEFAULT_BOTS_FOLDER = 'profithub';
 const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
     clientId: process.env.CLIENT_ID || '33EmTMY5M3NMHve0SU8tY',
     appId: process.env.APP_ID || '80058',
@@ -38,7 +38,7 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
         clientId: '33EmTMY5M3NMHve0SU8tY',
         appId: '80058',
         redirectUri: 'https://brixxie-theta.vercel.app/callback',
-        botsFolder: 'brixxie',
+        botsFolder: 'profithub',
         includeLegacyAppIdInOAuth: true,
     },
     // Production domain: www.profithub.co.ke
@@ -47,7 +47,7 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
         clientId: process.env.PROFITHUB_CLIENT_ID || 'YOUR_PROFITHUB_CLIENT_ID',
         appId: process.env.PROFITHUB_APP_ID || '80058',
         redirectUri: process.env.PROFITHUB_REDIRECT_URI || 'https://www.profithub.co.ke/callback',
-        botsFolder: 'brixxie',
+        botsFolder: 'profithub',
         includeLegacyAppIdInOAuth: true,
     },
 };
