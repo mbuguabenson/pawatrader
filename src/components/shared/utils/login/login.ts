@@ -1,6 +1,6 @@
-import { generateOAuthURL } from '../config/config';
+import { generateOAuthURL, OAuthURLOptions } from '../config/config';
 import { CookieStorage, isStorageSupported, LocalStore } from '../storage/storage';
-import { getStaticUrl, urlForCurrentDomain } from '../url';
+import { getStaticUrl as _getStaticUrl, urlForCurrentDomain } from '../url';
 
 export const redirectToLogin = async (
     is_logged_in: boolean,
@@ -19,8 +19,25 @@ export const redirectToLogin = async (
     }
 };
 
-export const redirectToSignUp = async () => {
-    window.location.replace(await generateOAuthURL('registration'));
+/**
+ * Redirects to Deriv's sign-up page via the OAuth2 PKCE flow.
+ *
+ * @param options - Optional partner attribution parameters.
+ *   - affiliateToken: your tracking token (t / affiliate_token / sidi / ca).
+ *     Use the name that appears in your referral link — include only one.
+ *   - utmCampaign: marketing campaign name (e.g. 'dynamicworks')
+ *   - utmMedium:   typically 'affiliate' for partner integrations
+ *   - utmSource:   your affiliate ID for commission tracking (e.g. 'CU303219')
+ */
+export const redirectToSignUp = async (
+    options?: Pick<OAuthURLOptions, 'affiliateToken' | 'utmCampaign' | 'utmMedium' | 'utmSource'>
+) => {
+    window.location.replace(
+        await generateOAuthURL({
+            prompt: 'registration',
+            ...options,
+        })
+    );
 };
 
 type TLoginUrl = {

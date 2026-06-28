@@ -255,9 +255,39 @@ export function getAuthRedirectUri(): string {
     return getDomainConfig().redirectUri;
 }
 
-export async function generateOAuthURL(prompt?: string, domainConfig = getDomainConfig()): Promise<string> {
+/**
+ * Options for generating an OAuth URL.
+ * Supports both login and sign-up flows, with optional partner attribution.
+ */
+export interface OAuthURLOptions {
+    /** Pass 'registration' to show the sign-up form instead of login */
+    prompt?: string;
+    /**
+     * Affiliate tracking token. Use the one that matches your referral link:
+     * t | affiliate_token | sidi | ca  — they are equivalent aliases.
+     * Only include one.
+     */
+    affiliateToken?: string;
+    /** Identifies the marketing campaign (e.g. 'dynamicworks') */
+    utmCampaign?: string;
+    /** Indicates a partner integration — typically 'affiliate' */
+    utmMedium?: string;
+    /** Your affiliate ID for commission tracking (e.g. 'CU303219') */
+    utmSource?: string;
+}
+
+export async function generateOAuthURL(
+    optionsOrPrompt?: OAuthURLOptions | string,
+    domainConfig = getDomainConfig()
+): Promise<string> {
     try {
         const { clientId, appId, redirectUri, includeLegacyAppIdInOAuth } = domainConfig;
+
+        // Resolve options — supports the legacy string (prompt only) API
+        const options: OAuthURLOptions =
+            typeof optionsOrPrompt === 'string'
+                ? { prompt: optionsOrPrompt }
+                : optionsOrPrompt ?? {};
 
         // Always use PKCE flow — legacy app_id-only OAuth is removed
         const isProd = isProduction();
@@ -281,15 +311,33 @@ export async function generateOAuthURL(prompt?: string, domainConfig = getDomain
                 code_challenge_method: 'S256',
             });
 
-            if (prompt) {
-                params.set('prompt', prompt);
+            // Sign-up: show registration form instead of login
+            if (options.prompt) {
+                params.set('prompt', options.prompt);
             }
 
+            // Legacy app_id — only included when opted-in via domain config
             if (includeLegacyAppIdInOAuth && appId) {
                 params.set('app_id', appId);
             }
 
-            return `${hostname}authorize?${params.toString()}`;
+            // Partner attribution — all optional, only included when present
+            // Use exactly one of: t | affiliate_token | sidi | ca
+            if (options.affiliateToken) {
+                params.set('t', options.affiliateToken);
+            }
+            if (options.utmCampaign) {
+                params.set('utm_campaign', options.utmCampaign);
+            }
+            if (options.utmMedium) {
+                params.set('utm_medium', options.utmMedium);
+            }
+            if (options.utmSource) {
+                params.set('utm_source', options.utmSource);
+            }
+
+            // The auth2_url base ends with '/' and the canonical path is 'auth'
+            return `${hostname}auth?${params.toString()}`;
         }
     } catch (error) {
         console.error('Error generating OAuth URL:', error);

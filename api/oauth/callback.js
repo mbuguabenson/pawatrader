@@ -176,7 +176,7 @@ export default async function handler(req, res) {
             params.set('app_id', app_id);
         }
 
-        const tokenResp = await fetch('https://oauth.deriv.com/oauth2/token', {
+        const tokenResp = await fetch('https://auth.deriv.com/oauth2/token', {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             body: params.toString(),

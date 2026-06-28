@@ -97,18 +97,6 @@ export const useOAuthCallback = (): OAuthCallbackResult => {
         const error = urlParams.get('error');
         const error_description = urlParams.get('error_description');
 
-        const isCallbackRoute = window.location.pathname === '/callback';
-        if (isCallbackRoute && (code !== null || state !== null || error !== null || error_description !== null)) {
-            setResult({
-                isProcessing: false,
-                isValid: false,
-                params: { code, state, error, error_description },
-                legacyAccounts: [],
-                error: null,
-            });
-            return;
-        }
-
         const isOAuthCallback = code !== null || error !== null || state !== null;
 
         if (!isOAuthCallback) {
@@ -121,6 +109,7 @@ export const useOAuthCallback = (): OAuthCallbackResult => {
             });
             return;
         }
+
 
         if (error) {
             console.error('OAuth error:', error, error_description);

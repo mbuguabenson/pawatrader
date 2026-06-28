@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import Cookies from 'js-cookie';
 import { clearCSRFToken, validateCSRFToken } from '@/components/shared/utils/config/config';
-import { OAuthTokenExchangeService } from '@/services/oauth-token-exchange.service';
 import { Button } from '@deriv-com/ui';
 
 /**
@@ -12,9 +10,13 @@ import { Button } from '@deriv-com/ui';
  *
  * Flow:
  *  1. Deriv redirects here with ?code=...&state=...
- *  2. We validate the CSRF state, exchange code for access token (PKCE),
- *     store auth_info in sessionStorage, set logged_state cookie, then
- *     redirect to the app root.
+ *  2. We validate the CSRF state (stored in sessionStorage before the redirect).
+ *  3. We then forward to /api/oauth/callback — the backend performs the PKCE
+ *     token exchange, stores tokens in HttpOnly cookies, and redirects to /.
+ *
+ * Security: The token exchange MUST NOT happen in the browser. Forwarding to
+ * the backend endpoint ensures code_verifier and the resulting access_token
+ * never travel through client-side JavaScript.
  */
 const CallbackPage = () => {
     const [status, setStatus] = useState<'processing' | 'success' | 'error'>('processing');
@@ -43,37 +45,30 @@ const CallbackPage = () => {
                 return;
             }
 
-            // Validate CSRF state
-            if (!validateCSRFToken(state)) {
-                setStatus('error');
-                setErrorMessage('Invalid state parameter — possible CSRF attack. Please try logging in again.');
-                return;
-            }
-            clearCSRFToken();
-
-            // Exchange authorization code for access token (PKCE)
-            const result = await OAuthTokenExchangeService.exchangeCodeForToken(code);
-
-            if (result.error || !result.access_token) {
-                setStatus('error');
-                setErrorMessage(result.error_description || result.error || 'Token exchange failed.');
-                return;
+            // Validate CSRF state — must match what was stored before the redirect.
+            // When the frontend-initiated PKCE flow (generateOAuthURL) is used, the
+            // state is the sessionStorage CSRF token and can be validated here.
+            // When the backend-initiated flow (/api/oauth/start) is used, the state
+            // is a signed PKCE token — validateCSRFToken returns false (expected),
+            // and the backend will validate its own signature.
+            const isClientSideCsrfValid = validateCSRFToken(state);
+            if (isClientSideCsrfValid) {
+                // Clear the CSRF token now that it has been validated client-side.
+                clearCSRFToken();
             }
 
-            // Mark as logged in
-            Cookies.set('logged_state', 'true', {
-                domain: window.location.hostname,
-                expires: 30,
-                path: '/',
-                secure: window.location.protocol === 'https:',
-            });
+            // Hand off to the backend for server-side token exchange.
+            // The backend will:
+            //  1. Verify the signed PKCE state token (or cookie-based state)
+            //  2. Exchange the code + code_verifier for an access_token
+            //  3. Set HttpOnly cookies (deriv_access_token, deriv_refresh_token, etc.)
+            //  4. Redirect to /
+            const backendCallbackUrl = new URL('/api/oauth/callback', window.location.origin);
+            backendCallbackUrl.searchParams.set('code', code);
+            backendCallbackUrl.searchParams.set('state', state);
 
             setStatus('success');
-
-            // Redirect to app root after short delay for UX
-            setTimeout(() => {
-                window.location.replace('/');
-            }, 500);
+            window.location.replace(backendCallbackUrl.toString());
         };
 
         run();

@@ -186,7 +186,27 @@ export default async function handler(req, res) {
             }
         });
 
-        const authUrl = `https://oauth.deriv.com/oauth2/authorize?${params.toString()}`;
+        // Sign-up: pass prompt=registration to show the sign-up form
+        // Partner attribution: pass optional tracking / UTM parameters
+        // (t, affiliate_token, sidi, ca are equivalent aliases — use whichever is present)
+        const SIGN_UP_PASSTHROUGH_PARAMS = [
+            'prompt',          // 'registration' for sign-up
+            't',               // affiliate tracking token (alias 1)
+            'affiliate_token', // affiliate tracking token (alias 2)
+            'sidi',            // affiliate tracking token (alias 3)
+            'ca',              // affiliate tracking token (alias 4)
+            'utm_campaign',
+            'utm_medium',
+            'utm_source',
+        ];
+        SIGN_UP_PASSTHROUGH_PARAMS.forEach(key => {
+            const val = query[key];
+            if (val && !params.has(key)) {
+                params.set(key, String(val));
+            }
+        });
+
+        const authUrl = `https://auth.deriv.com/oauth2/auth?${params.toString()}`;
 
         // Redirect the browser to Deriv's authorization endpoint
         return res.writeHead(302, { Location: authUrl }).end();
