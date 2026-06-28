@@ -97,6 +97,14 @@ export default async function handler(req, res) {
             app_id = null; // Not in token
             redirect_uri = pkceData.redirect_uri;
             console.log('[OAuth Callback] Using embedded PKCE token');
+        } else if (req.query.code_verifier) {
+            // Frontend-initiated flow: code_verifier passed from sessionStorage
+            code_verifier = req.query.code_verifier;
+            storedState = state; // Frontend validated state
+            client_id = cookies.oauth_client_id;
+            app_id = cookies.oauth_app_id;
+            redirect_uri = cookies.oauth_redirect_uri;
+            console.log('[OAuth Callback] Using query code_verifier from frontend sessionStorage');
         } else {
             // Fallback: Extract from cookies (old method)
             storedState = cookies.oauth_state;

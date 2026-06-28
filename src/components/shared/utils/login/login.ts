@@ -30,14 +30,9 @@ export const redirectToLogin = async (
  *   - utmSource:   your affiliate ID for commission tracking (e.g. 'CU303219')
  */
 export const redirectToSignUp = async (
-    options?: Pick<OAuthURLOptions, 'affiliateToken' | 'utmCampaign' | 'utmMedium' | 'utmSource'>
+    _options?: Pick<OAuthURLOptions, 'affiliateToken' | 'utmCampaign' | 'utmMedium' | 'utmSource'>
 ) => {
-    window.location.replace(
-        await generateOAuthURL({
-            prompt: 'registration',
-            ...options,
-        })
-    );
+    window.location.replace('https://track.deriv.com/_1mHiO0UpCX71hit6RV3zsGNd7ZgqdRLk/1/');
 };
 
 type TLoginUrl = {

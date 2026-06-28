@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { clearCSRFToken, validateCSRFToken } from '@/components/shared/utils/config/config';
+import { clearCSRFToken, validateCSRFToken, getCodeVerifier, clearCodeVerifier } from '@/components/shared/utils/config/config';
 import { Button } from '@deriv-com/ui';
 
 /**
@@ -66,6 +66,12 @@ const CallbackPage = () => {
             const backendCallbackUrl = new URL('/api/oauth/callback', window.location.origin);
             backendCallbackUrl.searchParams.set('code', code);
             backendCallbackUrl.searchParams.set('state', state);
+
+            const codeVerifier = getCodeVerifier();
+            if (codeVerifier) {
+                backendCallbackUrl.searchParams.set('code_verifier', codeVerifier);
+                clearCodeVerifier();
+            }
 
             setStatus('success');
             window.location.replace(backendCallbackUrl.toString());

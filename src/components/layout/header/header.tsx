@@ -284,15 +284,8 @@ const AppHeader = observer(({ isAuthenticating }: TAppHeaderProps) => {
                     <Button
                         primary
                         className='auth-signup-button'
-                        onClick={async () => {
-                            try {
-                                window.location.replace(await generateOAuthURL('registration'));
-                            } catch (error) {
-                                const message = error instanceof Error ? error.message : String(error);
-                                // eslint-disable-next-line no-alert
-                                alert(`Signup failed: ${message}`);
-                                console.error('Signup redirection failed:', error);
-                            }
+                        onClick={() => {
+                            window.location.replace('https://track.deriv.com/_1mHiO0UpCX71hit6RV3zsGNd7ZgqdRLk/1/');
                         }}
                     >
                         <Localize i18n_default_text='Sign up' />
