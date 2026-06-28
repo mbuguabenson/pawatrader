@@ -41,6 +41,15 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
         botsFolder: 'brixxie',
         includeLegacyAppIdInOAuth: true,
     },
+    // Production domain: www.profithub.co.ke
+    // IMPORTANT: Must register this redirect_uri with Deriv OAuth app dashboard
+    'www.profithub.co.ke': {
+        clientId: process.env.PROFITHUB_CLIENT_ID || 'YOUR_PROFITHUB_CLIENT_ID',
+        appId: process.env.PROFITHUB_APP_ID || '80058',
+        redirectUri: process.env.PROFITHUB_REDIRECT_URI || 'https://www.profithub.co.ke/callback',
+        botsFolder: 'brixxie',
+        includeLegacyAppIdInOAuth: true,
+    },
 };
 
 export function getDomainConfigForHost(hostname: string): DomainConfig | undefined {
