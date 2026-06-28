@@ -1,9 +1,7 @@
 import { ReactNode } from 'react';
 import { standalone_routes } from '@/components/shared';
 import {
-    LegacyCashierIcon as CashierLogo,
     LegacyHomeNewIcon as TradershubLogo,
-    LegacyReportsIcon as ReportsLogo,
 } from '@deriv/quill-icons/Legacy';
 import {
     DerivProductBrandLightDerivBotLogoWordmarkIcon as DerivBotLogo,
@@ -71,20 +69,24 @@ export const TRADERS_HUB_LINK_CONFIG = {
     as: 'a',
     href: standalone_routes.traders_hub,
     icon: <TradershubLogo iconSize='xs' />,
-    label: "Trader's Hub",
+    label: 'Home',
 };
 
-export const MenuItems: MenuItemsConfig[] = [
-    {
-        as: 'a',
-        href: standalone_routes.reports,
-        icon: <ReportsLogo iconSize='xs' />,
-        label: localize('Reports'),
-    },
-    {
-        as: 'a',
-        href: standalone_routes.cashier,
-        icon: <CashierLogo iconSize='xs' />,
-        label: localize('Cashier'),
-    },
-];
+// ========================================
+// MENU ITEMS CONFIGURATION PLACEHOLDER
+// ========================================
+//
+// Add your custom menu items here for the desktop header.
+//
+// EXAMPLE:
+// export const MenuItems: MenuItemsConfig[] = [
+//     {
+//         as: 'a',
+//         href: '/your-page',
+//         icon: <YourIcon />,
+//         label: localize('Your Menu Item'),
+//     },
+// ];
+//
+// Empty by default for white-labeling
+export const MenuItems: MenuItemsConfig[] = [];
