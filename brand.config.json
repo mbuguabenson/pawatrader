@@ -1,11 +1,11 @@
 {
   "brand_name": "Brixxie",
-  "brand_domain": "brixxie-theta.vercel.app",
+  "brand_domain": "www.profithub.co.ke",
   "brand_hostname": {
     "staging": "brixxie-theta.vercel.app",
-    "production": "brixxie-theta.vercel.app"
+    "production": "www.profithub.co.ke"
   },
-  "domain_name": "brixxie-theta.vercel.app",
+  "domain_name": "www.profithub.co.ke",
   "colors": {
     "primary": "#3b82f6",
     "secondary": "#64748b",
