@@ -53,20 +53,44 @@ const SymbolSelect: React.FC = () => {
     );
 
     useEffect(() => {
-        const { active_symbols } =
-            (ApiHelpers?.instance as unknown as {
-                active_symbols: {
-                    getSymbolsForBot: () => TSymbol[];
-                };
-            }) ?? {};
-        const symbols = active_symbols?.getSymbolsForBot?.();
-        setActiveSymbols(symbols);
+        let retryCount = 0;
+        const MAX_RETRIES = 30; // wait up to 30 s for the auth+symbol pipeline
+        let retryTimer: ReturnType<typeof setTimeout> | null = null;
 
-        const has_symbol = !!symbols?.find(symbol => symbol?.value === values?.symbol);
-        if (!has_symbol) {
-            setFieldValue('symbol', symbols?.[0]?.value);
-            setValue('symbol', symbols?.[0]?.value);
-        }
+        const loadSymbols = () => {
+            const { active_symbols: apiActiveSymbols } =
+                (ApiHelpers?.instance as unknown as {
+                    active_symbols: {
+                        getSymbolsForBot: () => TSymbol[];
+                    };
+                }) ?? {};
+
+            const symbolsList = apiActiveSymbols?.getSymbolsForBot?.() ?? [];
+
+            if (symbolsList.length > 0) {
+                // Symbols are ready — set state and stop polling
+                setActiveSymbols(symbolsList);
+
+                const has_symbol = !!symbolsList.find(symbol => symbol?.value === values?.symbol);
+                if (!has_symbol) {
+                    setFieldValue('symbol', symbolsList[0]?.value);
+                    setValue('symbol', symbolsList[0]?.value);
+                }
+            } else if (retryCount < MAX_RETRIES) {
+                // Symbols not yet available (auth/enrichment still in progress) — retry after 1 s
+                retryCount += 1;
+                console.log(`[SymbolSelect] Symbols not ready yet, retry ${retryCount}/${MAX_RETRIES}...`);
+                retryTimer = setTimeout(loadSymbols, 1000);
+            } else {
+                console.warn('[SymbolSelect] Timed out waiting for active symbols after 30 retries.');
+            }
+        };
+
+        loadSymbols();
+
+        return () => {
+            if (retryTimer) clearTimeout(retryTimer);
+        };
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
@@ -88,7 +112,7 @@ const SymbolSelect: React.FC = () => {
     };
 
     const handleItemSelection = (item: TItem) => {
-        if (item?.value) {
+        if (item && typeof item !== 'string' && item?.value) {
             const { value } = item as TSymbol;
             setFieldValue('symbol', value);
             setValue('symbol', value);
@@ -119,7 +143,6 @@ const SymbolSelect: React.FC = () => {
                         <Autocomplete
                             {...rest_field}
                             readOnly={!isDesktop}
-                            inputMode='none'
                             data-testid='dt_qs_symbol'
                             autoComplete='off'
                             className='qs__autocomplete'

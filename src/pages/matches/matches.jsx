@@ -68,7 +68,7 @@ const Matches = observer(() => {
         if (active_tab !== DBOT_TABS.MATCHES) return;
 
         const init = async () => {
-            const api = generateDerivApiInstance();
+            const api = await generateDerivApiInstance();
             apiRef.current = api;
 
             // Load symbols - Volatility and Jump Index markets

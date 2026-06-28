@@ -37,6 +37,7 @@ type TAutocompleteProps = {
     onSearch?: (value: string, items: TItem[]) => [];
     data_testid: string;
     readOnly?: boolean;
+    onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 const KEY_CODE = {

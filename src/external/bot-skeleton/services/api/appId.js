@@ -148,6 +148,25 @@ export const V2GetActiveAccountId = () => {
     return null;
 };
 
+/**
+ * Returns true when the user is authenticated via the new PKCE / session-based
+ * OAuth flow (token stored in sessionStorage['auth_info']).
+ * In this mode the WebSocket URL itself is already authenticated via OTP, so
+ * no per-account token is stored in localStorage and authorize() must be skipped.
+ */
+export const isPKCESession = () => {
+    try {
+        const authInfoStr = sessionStorage.getItem('auth_info');
+        if (!authInfoStr) return false;
+        const authInfo = JSON.parse(authInfoStr);
+        // Treat as valid PKCE session only when the token hasn't expired
+        if (authInfo?.expires_at && Date.now() >= authInfo.expires_at) return false;
+        return !!authInfo?.access_token;
+    } catch {
+        return false;
+    }
+};
+
 export const getToken = () => {
     const active_loginid = getLoginId();
     const pending_api_token = getPendingApiToken();
@@ -156,6 +175,17 @@ export const getToken = () => {
         return {
             token: pending_api_token,
             account_id: undefined,
+        };
+    }
+
+    // PKCE / session-based OAuth: the WebSocket URL is authenticated via OTP.
+    // There is no per-account token in localStorage, so we return a sentinel
+    // string so authorizeAndSubscribe() knows it can skip api.authorize().
+    if (isPKCESession()) {
+        console.log('[getToken] PKCE session detected — skipping legacy token lookup');
+        return {
+            token: '__PKCE_SESSION__',
+            account_id: active_loginid ?? undefined,
         };
     }
 

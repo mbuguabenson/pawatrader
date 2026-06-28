@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { observer } from 'mobx-react-lite';
 import Text from '@/components/shared_ui/text';
 import { localize } from '@deriv-com/translations';
@@ -22,28 +22,27 @@ const TRADE_TYPES = [
     { value: 'DIGITDIFF', label: 'Differs' },
 ];
 
-// Safe version of tradeOptionToBuy without Blockly dependencies
 const tradeOptionToBuy = (contract_type: string, trade_option: any) => {
-    const buy = {
-        buy: '1',
-        price: trade_option.amount,
-        parameters: {
-            amount: trade_option.amount,
-            basis: trade_option.basis,
-            contract_type,
-            currency: trade_option.currency,
-            duration: trade_option.duration,
-            duration_unit: trade_option.duration_unit,
-            symbol: trade_option.symbol,
-        },
+    const params: Record<string, any> = {
+        amount: trade_option.amount,
+        basis: trade_option.basis,
+        contract_type,
+        currency: trade_option.currency,
+        duration: trade_option.duration,
+        duration_unit: trade_option.duration_unit,
+        symbol: trade_option.symbol,
     };
     if (trade_option.prediction !== undefined) {
-        buy.parameters.selected_tick = trade_option.prediction;
+        params.selected_tick = trade_option.prediction;
     }
     if (!['TICKLOW', 'TICKHIGH'].includes(contract_type) && trade_option.prediction !== undefined) {
-        buy.parameters.barrier = trade_option.prediction;
+        params.barrier = trade_option.prediction;
     }
-    return buy;
+    return {
+        buy: '1',
+        price: trade_option.amount,
+        parameters: params,
+    };
 };
 
 const SpeedBot = observer(() => {
@@ -76,13 +75,13 @@ const SpeedBot = observer(() => {
     // Live digits state
     const [digits, setDigits] = useState<number[]>([]);
     const [lastDigit, setLastDigit] = useState<number | null>(null);
-    const [ticksProcessed, setTicksProcessed] = useState<number>(0);
-
     const [status, setStatus] = useState<string>('');
     // UI toggles and counters
     const [altEvenOdd, setAltEvenOdd] = useState<boolean>(false);
     const [altOnLoss, setAltOnLoss] = useState<boolean>(false);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [consecWins, setConsecWins] = useState<number>(0);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [consecLosses, setConsecLosses] = useState<number>(0);
 
     const [is_running, setIsRunning] = useState(false);
@@ -109,9 +108,9 @@ const SpeedBot = observer(() => {
 
     useEffect(() => {
         // Initialize API connection and fetch active symbols
-        const api = generateDerivApiInstance();
-        apiRef.current = api;
         const init = async () => {
+            const api = await generateDerivApiInstance();
+            apiRef.current = api;
             try {
                 // Fetch active symbols (volatility indices)
                 const { active_symbols, error: asErr } = await api.send({ active_symbols: 'brief' });
@@ -141,7 +140,7 @@ const SpeedBot = observer(() => {
                     apiRef.current?.connection?.removeEventListener('message', messageHandlerRef.current);
                     messageHandlerRef.current = null;
                 }
-                api?.disconnect?.();
+                apiRef.current?.disconnect?.();
             } catch {
                 /* noop */
             }
@@ -189,7 +188,6 @@ const SpeedBot = observer(() => {
         stopTicks();
         setDigits([]);
         setLastDigit(null);
-        setTicksProcessed(0);
         try {
             const { subscription, error } = await apiRef.current.send({ ticks: sym, subscribe: 1 });
             if (error) throw error;
@@ -202,8 +200,7 @@ const SpeedBot = observer(() => {
                         const quote = data.tick.quote;
                         const digit = Number(String(quote).slice(-1));
                         setLastDigit(digit);
-                        setDigits(prev => [...prev.slice(-8), digit]);
-                        setTicksProcessed(prev => prev + 1);
+                        setDigits((prev: number[]) => [...prev.slice(-8), digit]);
                     }
                     if (data?.forget?.id && data?.forget?.id === tickStreamIdRef.current) {
                         // stopped
@@ -381,7 +378,7 @@ const SpeedBot = observer(() => {
                                             lastOutcomeWasLossRef.current = false;
                                             lossStreak = 0;
                                             step = 0;
-                                            setStake(baseStake);
+                                            setStake(String(baseStake));
                                         } else {
                                             lastOutcomeWasLossRef.current = true;
                                             lossStreak++;
@@ -710,7 +707,7 @@ const SpeedBot = observer(() => {
                     )}
 
                     <div className='speedbot__digits'>
-                        {digits.map((d, idx) => (
+                        {digits.map((d: number, idx: number) => (
                             <div
                                 key={`${idx}-${d}`}
                                 className={`speedbot__digit ${d === lastDigit ? 'is-current' : ''} ${getHintClass(d)}`}
@@ -721,7 +718,7 @@ const SpeedBot = observer(() => {
                     </div>
                     {(tradeType === 'DIGITEVEN' || tradeType === 'DIGITODD') && (
                         <div className='speedbot__digits speedbot__digits--eo'>
-                            {digits.map((d, idx) => {
+                            {digits.map((d: number, idx: number) => {
                                 const is_even = d % 2 === 0;
                                 const label = is_even ? 'E' : 'O';
                                 const cls = is_even ? 'is-green' : 'is-red';

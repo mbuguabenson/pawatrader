@@ -37,7 +37,7 @@ class DerivClient {
 
     async connectAndAuthorize(token: string) {
         this.status = 'connecting';
-        this.api = generateDerivApiInstance();
+        this.api = await generateDerivApiInstance();
         // wait for socket open
         await new Promise<void>((resolve, reject) => {
             const onOpen = () => {

@@ -28,7 +28,7 @@ import {
     setIsAuthorizing,
 } from './observables/connection-status-stream';
 import ApiHelpers from './api-helpers';
-import { generateDerivApiInstance, V2GetActiveAccountId, getToken } from './appId';
+import { generateDerivApiInstance, getToken, isPKCESession } from './appId';
 import chart_api from './chart-api';
 
 type CurrentSubscription = {
@@ -234,9 +234,10 @@ class APIBase {
             }
         }
 
-        const hasAccountId = V2GetActiveAccountId();
-
-        if (!this.has_active_symbols && !hasAccountId) {
+        // For PKCE sessions the WebSocket URL is already authenticated via OTP,
+        // so we always start fetching symbols immediately (no token-gated delay).
+        // For unauthenticated (logged-out) users we also do a public symbols fetch.
+        if (!this.has_active_symbols) {
             this.active_symbols_promise = this.getActiveSymbols().then(() => undefined);
         }
 
@@ -328,7 +329,7 @@ class APIBase {
                     currency,
                     is_virtual: isDemoAccount(loginid) ? 1 : 0,
                     loginid,
-                };
+                } as any;
             });
         } catch (error) {
             console.error('[authorizeAndSubscribe] Error building legacy account list:', error);
@@ -356,9 +357,16 @@ class APIBase {
                 ws_ready_state: this.api?.connection?.readyState,
             });
 
-            // Authorize with the token first (required for legacy API)
+            // ----------------------------------------------------------------
+            // Authorize with the token
+            // PKCE flow: WebSocket URL is already authenticated via OTP — skip
+            // api.authorize() entirely and go straight to balance().
+            // Legacy flow: pass the stored token to api.authorize().
+            // ----------------------------------------------------------------
             let authorizeData: TAuthData | undefined;
-            if (storedToken) {
+            const isPKCE = isPKCESession();
+            if (storedToken && storedToken !== '__PKCE_SESSION__') {
+                // Legacy OAuth / API-token flow: authorize with the stored token
                 try {
                     console.log('[authorizeAndSubscribe] 🔐 Calling api.authorize() with legacy token...');
                     const authResult = await this.api.authorize(storedToken);
@@ -411,6 +419,9 @@ class APIBase {
                     setIsAuthorizing(false);
                     return { error: authException, localizedMessage: 'Authorization exception' };
                 }
+            } else if (isPKCE) {
+                // PKCE / OTP-authenticated WebSocket — no authorize() call needed.
+                console.log('[authorizeAndSubscribe] ✅ PKCE session — WebSocket already authenticated via OTP, skipping authorize()');
             } else {
                 console.warn('⚠️ [authorizeAndSubscribe] No token available for authorization', {
                     active_loginid: accountId,
@@ -535,16 +546,16 @@ class APIBase {
                     ? [currentAccount]
                     : [];
 
-            setAccountList(accountList); // Observable stream
+            setAccountList(accountList as any); // Observable stream
             setAuthData({
                 balance: balance?.balance,
                 currency: balance?.currency,
                 loginid: balance?.loginid,
                 is_virtual: accountType === 'real' ? 0 : 1,
-                account_list: accountList,
+                account_list: accountList as any,
                 scopes: normalizeScopes(authorizeData?.scopes || (authorizeData as any)?.scope),
                 token: storedToken,
-            });
+            } as any);
 
             // // Set account_type in localStorage based on loginid prefix using centralized utility
             const loginid = balance?.loginid || '';

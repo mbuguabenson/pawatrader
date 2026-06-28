@@ -51,7 +51,7 @@ const Diffbot = observer(() => {
     // Initialize API and load symbols
     useEffect(() => {
         const init = async () => {
-            const api = generateDerivApiInstance();
+            const api = await generateDerivApiInstance();
             apiRef.current = api;
 
             // Load symbols
