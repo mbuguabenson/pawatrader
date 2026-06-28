@@ -1,4 +1,5 @@
-import MobileMenu, { MobileMenuRef } from './mobile-menu';
+import MobileMenu from './mobile-menu';
+import type { MobileMenuRef } from './mobile-menu';
 
-export { MobileMenuRef };
+export type { MobileMenuRef };
 export default MobileMenu;
