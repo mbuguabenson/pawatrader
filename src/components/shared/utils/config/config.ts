@@ -23,7 +23,7 @@ const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
     redirectUri: process.env.REDIRECT_URI || `${window.location.origin}/`,
     botsFolder: process.env.BOTS_FOLDER || DEFAULT_BOTS_FOLDER,
     includeLegacyAppIdInOAuth: true,
-    useLegacyOAuthLogin: true,
+    useLegacyOAuthLogin: false,
 };
 
 export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
@@ -33,7 +33,7 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
         redirectUri: 'https://brixxie-theta.vercel.app/',
         botsFolder: 'brixxie',
         includeLegacyAppIdInOAuth: true,
-        useLegacyOAuthLogin: true,
+        useLegacyOAuthLogin: false,
     },
 };
 
@@ -263,7 +263,11 @@ export async function generateOAuthURL(prompt?: string, domainConfig = getDomain
         const { clientId, appId, redirectUri, includeLegacyAppIdInOAuth } = domainConfig;
 
         if (domainConfig.useLegacyOAuthLogin && appId) {
-            const params = new URLSearchParams({ app_id: appId });
+            // Include redirect_uri so Deriv sends users back to this app (not home.deriv.com)
+            const params = new URLSearchParams({
+                app_id: appId,
+                redirect_uri: redirectUri,
+            });
             if (prompt) {
                 params.set('prompt', prompt);
             }
