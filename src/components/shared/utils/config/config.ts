@@ -19,20 +19,25 @@ const DEFAULT_BOTS_FOLDER = 'brixxie';
 const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
     clientId: process.env.CLIENT_ID || '33EmTMY5M3NMHve0SU8tY',
     appId: process.env.APP_ID || '80058',
+    // /callback is the URI registered in the Deriv OAuth app dashboard.
+    // Vercel rewrites /callback → /api/oauth/callback (see vercel.json).
+    // Never use /api/oauth/callback here — Deriv will reject it as unregistered.
     redirectUri:
         process.env.REDIRECT_URI ||
         process.env.DERIV_REDIRECT_URI ||
         process.env.OAUTH_REDIRECT_URI ||
-        `${window.location.origin}/api/oauth/callback`,
+        `${window.location.origin}/callback`,
     botsFolder: process.env.BOTS_FOLDER || DEFAULT_BOTS_FOLDER,
     includeLegacyAppIdInOAuth: true,
 };
 
 export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
+    // redirect_uri MUST match exactly what is registered in the Deriv OAuth app.
+    // Vercel rewrites /callback → /api/oauth/callback via vercel.json.
     'brixxie-theta.vercel.app': {
         clientId: '33EmTMY5M3NMHve0SU8tY',
         appId: '80058',
-        redirectUri: 'https://brixxie-theta.vercel.app/api/oauth/callback',
+        redirectUri: 'https://brixxie-theta.vercel.app/callback',
         botsFolder: 'brixxie',
         includeLegacyAppIdInOAuth: true,
     },
