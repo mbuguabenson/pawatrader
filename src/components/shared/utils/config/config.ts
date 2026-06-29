@@ -90,8 +90,10 @@ export function isLocal(): boolean {
 // =============================================================================
 
 const getDefaultServerURL = (): string => {
-    // Use the new Deriv API public WebSocket endpoint from https://developers.deriv.com/llms.txt
-    return "wss://api.derivws.com/trading/v1/options/ws/public";
+    const isProd = isProduction();
+    const baseUrl = brandConfig.platform.derivws.url[isProd ? 'production' : 'staging'];
+    const directory = brandConfig.platform.derivws.directories.options;
+    return `${baseUrl.replace('https://', 'wss://')}${directory}ws/public`;
 };
 
 const getLegacyServerURL = (): string => {

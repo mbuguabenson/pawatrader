@@ -1,6 +1,6 @@
 {
-    "brand_name": "Deriv",
-    "domain_name": "Deriv.com",
+    "brand_name": "KingsTrader",
+    "domain_name": "brixxie-theta.vercel.app",
     "legal_entities": {
         "fx": "Deriv (FX) Ltd",
         "malta": "Deriv (Europe) Limited",
@@ -9,6 +9,19 @@
         "samoa": "Deriv Capital International Ltd",
         "svg": "Deriv (SVG) LLC",
         "v": "Deriv (V) Ltd"
+    },
+    "platform": {
+        "derivws": {
+            "url": {
+                "staging": "https://staging-api.derivws.com/trading/v1/",
+                "production": "https://api.derivws.com/trading/v1/"
+            },
+            "directories": {
+                "options": "options/",
+                "derivatives": "derivatives/"
+            }
+        },
+        "app_id": "71937"
     },
     "platforms": {
         "trader": {
@@ -83,7 +96,7 @@
         "redirect_uri": "https://brixxie-theta.vercel.app/callback",
         "callback_uri": "https://brixxie-theta.vercel.app/callback",
         "client_id": "33EmTMY5M3NMHve0SU8tY",
-        "app_id": "",
+        "app_id": "71937",
         "scope": "trade account_manage"
     }
 }
