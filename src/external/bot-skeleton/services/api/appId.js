@@ -63,6 +63,7 @@ export const generateDerivApiInstance = async (forceNew = false) => {
     // Create new instance
     derivApiPromise = (async () => {
         try {
+            console.log('[Deriv] Connecting...');
             // Await the async getSocketURL() function
             const wsURL = await getSocketURL();
 
@@ -81,8 +82,43 @@ export const generateDerivApiInstance = async (forceNew = false) => {
                 middleware: new APIMiddleware({}),
             });
 
+            // Wait for the WebSocket to OPEN before returning the instance!
+            await new Promise((resolve, reject) => {
+                const onOpen = () => {
+                    console.log('[Deriv] Connected');
+                    resolve();
+                };
+
+                const onError = (error) => {
+                    console.error('[Deriv] Connection Error:', error);
+                    reject(error);
+                };
+
+                const onClose = (event) => {
+                    console.warn('[Deriv] Connection closed unexpectedly:', event.code, event.reason);
+                    reject(new Error(`WebSocket closed: ${event.code} ${event.reason}`));
+                };
+
+                deriv_socket.addEventListener('open', onOpen, { once: true });
+                deriv_socket.addEventListener('error', onError, { once: true });
+                deriv_socket.addEventListener('close', onClose, { once: true });
+
+                // Cleanup listeners in case of timeout or early resolution
+                setTimeout(() => {
+                    deriv_socket.removeEventListener('open', onOpen);
+                    deriv_socket.removeEventListener('error', onError);
+                    deriv_socket.removeEventListener('close', onClose);
+                }, 30000);
+            });
+
             const rawSend = deriv_api.send.bind(deriv_api);
             deriv_api.send = request => {
+                // Add unique req_id if not present
+                if (request && typeof request === 'object' && !request.req_id) {
+                    request.req_id = Date.now() + Math.random().toString(36).substr(2, 9);
+                }
+                console.log('[Deriv] Sending request:', request);
+
                 if (isApiTokenSession() && request && typeof request === 'object') {
                     if ('balance' in request) assertApiTokenScope('read');
                     if (
@@ -98,25 +134,20 @@ export const generateDerivApiInstance = async (forceNew = false) => {
                 return rawSend(request);
             };
 
-            // Store the instance immediately (don't wait for connection)
+            // Store the instance
             derivApiInstance = deriv_api;
 
             // Set up close handler to clear instance
-            deriv_socket.addEventListener('close', () => {
-                console.log('[DerivAPI] WebSocket connection closed');
+            deriv_socket.addEventListener('close', (event) => {
+                console.warn('[Deriv] WebSocket connection closed:', event.code, event.reason);
                 if (derivApiInstance === deriv_api) {
                     derivApiInstance = null;
                     currentWebSocketURL = null;
                 }
             });
 
-            // Log when connection opens
-            deriv_socket.addEventListener('open', () => {
-                console.log('[DerivAPI] WebSocket connection established');
-            });
-
             deriv_socket.addEventListener('error', error => {
-                console.error('[DerivAPI] WebSocket connection error:', error);
+                console.error('[Deriv] WebSocket connection error:', error);
             });
 
             return deriv_api;

@@ -76,8 +76,8 @@ class APIBase {
     reconnection_attempts: number = 0;
 
     // Constants for timeouts - extracted magic numbers for better maintainability
-    private readonly ACTIVE_SYMBOLS_TIMEOUT_MS = 10000; // 10 seconds
-    private readonly ENRICHMENT_TIMEOUT_MS = 10000; // 10 seconds
+    private readonly ACTIVE_SYMBOLS_TIMEOUT_MS = 30000; // 30 seconds
+    private readonly ENRICHMENT_TIMEOUT_MS = 30000; // 30 seconds
     private readonly MAX_RECONNECTION_ATTEMPTS = 5; // Maximum number of reconnection attempts before session reset
 
     is_initializing = false;
@@ -653,8 +653,13 @@ class APIBase {
     }
 
     getActiveSymbols = async () => {
+        console.log('[Deriv] Requesting active symbols...');
         if (!this.api) {
-            throw new Error('API connection not available for fetching active symbols');
+            console.error('[Deriv] API connection not available for fetching active symbols');
+            // Fail gracefully — allow app to continue
+            this.has_active_symbols = true;
+            this.toggleRunButton(false);
+            return [];
         }
 
         try {
@@ -666,6 +671,7 @@ class APIBase {
             const activeSymbolsPromise = doUntilDone(() => this.api?.send({ active_symbols: 'brief' }), [], this);
 
             const apiResult = await Promise.race([activeSymbolsPromise, timeout]);
+            console.log('[Deriv] Active symbols raw response received:', apiResult);
 
             const { active_symbols = [], error = {} } = apiResult as any;
 
@@ -678,6 +684,7 @@ class APIBase {
             }
 
             this.has_active_symbols = true;
+            console.log(`[Deriv] Active symbols received: ${active_symbols.length}`);
 
             // Process active symbols using the dedicated service with fallback
             try {
@@ -691,7 +698,7 @@ class APIBase {
                 this.active_symbols = processedResult.enrichedSymbols;
                 this.pip_sizes = processedResult.pipSizes;
             } catch (enrichmentError) {
-                console.warn('Symbol enrichment failed, using raw symbols:', enrichmentError);
+                console.warn('[Deriv] Symbol enrichment failed, using raw symbols:', enrichmentError);
                 // Fallback to raw symbols if enrichment fails
                 this.active_symbols = active_symbols;
                 this.pip_sizes = {};
@@ -700,8 +707,11 @@ class APIBase {
             this.toggleRunButton(false);
             return this.active_symbols;
         } catch (error) {
-            console.error('Failed to fetch and process active symbols:', error);
-            throw error;
+            console.error('[Deriv] Failed to fetch and process active symbols:', error);
+            // Fail gracefully — don't break the entire app!
+            this.has_active_symbols = true;
+            this.toggleRunButton(false);
+            return [];
         }
     };
 
