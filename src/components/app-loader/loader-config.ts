@@ -54,7 +54,10 @@ export const getLoaderDuration = (): number => {
 
 // Helper function to check if loader should be enabled
 export const isLoaderEnabled = (): boolean => {
-    if (LOADER_CONFIG.ENVIRONMENT.PRODUCTION_ONLY && process.env.NODE_ENV !== 'production') {
+    if (process.env.NODE_ENV !== 'production') {
+        return false;
+    }
+    if (LOADER_CONFIG.ENVIRONMENT.PRODUCTION_ONLY) {
         return false;
     }
 
