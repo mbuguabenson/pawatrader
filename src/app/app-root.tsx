@@ -6,7 +6,6 @@ import ChunkLoader from '@/components/loader/chunk-loader';
 import CommunityModal from '@/components/community-modal/community-modal';
 import { api_base } from '@/external/bot-skeleton';
 import { useStore } from '@/hooks/useStore';
-import useTMB from '@/hooks/useTMB';
 import { localize } from '@deriv-com/translations';
 import './app-root.scss';
 
