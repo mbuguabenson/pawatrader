@@ -39,41 +39,9 @@ const AppRoot = () => {
     const store = useStore();
     const api_base_initialized = useRef(false);
     const [is_api_initialized, setIsApiInitialized] = useState(false);
-    const [is_tmb_check_complete, setIsTmbCheckComplete] = useState(false);
-    const [, setIsTmbEnabled] = useState(false);
-    const { isTmbEnabled } = useTMB();
 
-    // Effect to check TMB status - independent of API initialization
+    // Initialize API immediately
     useEffect(() => {
-        const checkTmbStatus = async () => {
-            try {
-                const tmb_status = await isTmbEnabled();
-                const final_status = tmb_status || window.is_tmb_enabled === true;
-
-                setIsTmbEnabled(final_status);
-
-                setIsTmbCheckComplete(true);
-            } catch (error) {
-                console.error('TMB check failed:', error);
-                setIsTmbCheckComplete(true);
-            }
-        };
-
-        checkTmbStatus();
-    }, []);
-
-    // Initialize API when TMB check is complete with timeout fallback
-    useEffect(() => {
-        if (!is_tmb_check_complete) {
-            return; // Wait until TMB check is complete
-        }
-
-        const timeoutId = setTimeout(() => {
-            if (!is_api_initialized) {
-                setIsApiInitialized(true);
-            }
-        }, 5000);
-
         const initializeApi = async () => {
             if (!api_base_initialized.current) {
                 try {
@@ -84,14 +52,12 @@ const AppRoot = () => {
                     api_base_initialized.current = false;
                 } finally {
                     setIsApiInitialized(true);
-                    clearTimeout(timeoutId); // Clear timeout if API init completes
                 }
             }
         };
 
         initializeApi();
-        return () => clearTimeout(timeoutId);
-    }, [is_tmb_check_complete]);
+    }, []);
 
     if (!store || !is_api_initialized) return <AppRootLoader />;
 

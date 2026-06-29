@@ -185,77 +185,11 @@ const useTMB = (): UseTMBReturn => {
         return tmbStatusPromiseRef.current;
     }, [is_staging]);
 
-    // Initialize the hook and check TMB status - only run once
+    // Initialize hook immediately - skip TMB check to avoid blocking app load
     useEffect(() => {
-        if (TMBState.isInitialized) {
-            return; // Only run initialization once
-        }
-
-        TMBState.isInitialized = true;
-
-        // Don't set states to true until all async operations are complete
-        setIsInitialized(false);
-        setIsTmbCheckComplete(false);
-
-        // Add a safety timeout to ensure the hook always completes initialization
-        const safetyTimeout = setTimeout(() => {
-            setIsInitialized(true);
-            setIsTmbCheckComplete(true);
-        }, 2500);
-
-        const initializeHook = async () => {
-            try {
-                // Pre-fetch active sessions if needed
-                if (!isCallbackPage && window.is_tmb_enabled) {
-                    try {
-                        // This is a critical step - we need to await this
-                        const activeSessions = await getActiveSessions();
-                        activeSessionsRef.current = activeSessions;
-
-                        // Process tokens in advance if available
-                        if (
-                            activeSessions?.active &&
-                            Array.isArray(activeSessions.tokens) &&
-                            activeSessions.tokens.length > 0
-                        ) {
-                            const { accountsList, clientAccounts } = processTokens(activeSessions.tokens);
-                            localStorage.setItem('accountsList', JSON.stringify(accountsList));
-                            localStorage.setItem('clientAccounts', JSON.stringify(clientAccounts));
-                        }
-                    } catch (error) {
-                        console.error('Failed to pre-fetch active sessions:', error);
-                    } finally {
-                        setIsApiInitialized(true);
-                    }
-                } else {
-                    setIsApiInitialized(true);
-                }
-
-                // Only after all operations are complete, mark as initialized
-                setIsInitialized(true);
-                setIsTmbCheckComplete(true);
-
-                // Clear the safety timeout since we completed normally
-                clearTimeout(safetyTimeout);
-            } catch (error) {
-                console.error('Failed to initialize TMB hook:', error);
-                // Still mark as initialized to avoid blocking the app completely
-                setIsInitialized(true);
-                setIsTmbCheckComplete(true);
-
-                // Clear the safety timeout since we're handling the error
-                clearTimeout(safetyTimeout);
-            }
-        };
-
-        // Start initialization immediately
-        initializeHook();
-
-        // Clean up the safety timeout if the component unmounts
-        return () => {
-            clearTimeout(safetyTimeout);
-        };
-    }, [isTmbEnabled, isCallbackPage, processTokens, getActiveSessions]);
+        setIsInitialized(true);
+        setIsTmbCheckComplete(true);
+    }, []);
 
     const logout = useCallback(async () => {
         try {
