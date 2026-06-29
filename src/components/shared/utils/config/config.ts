@@ -17,8 +17,8 @@ interface DomainConfig {
 
 const DEFAULT_BOTS_FOLDER = 'profithub';
 const DEFAULT_DOMAIN_CONFIG: DomainConfig = {
-    clientId: process.env.CLIENT_ID || '33gamhJ1FCjBelYzHVs',
-    appId: process.env.APP_ID || '33gamhJ1FCjBelYzHVs',
+    clientId: process.env.CLIENT_ID || '71937',
+    appId: process.env.APP_ID || '71937',
     // /callback is the URI registered in the Deriv OAuth app dashboard.
     // Vercel rewrites /callback → /api/oauth/callback (see vercel.json).
     // Never use /api/oauth/callback here — Deriv will reject it as unregistered.
@@ -35,8 +35,8 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
     // redirect_uri MUST match exactly what is registered in the Deriv OAuth app.
     // Vercel rewrites /callback → /api/oauth/callback via vercel.json.
     'brixxie-theta.vercel.app': {
-        clientId: '33gamhJ1FCjBelYzHVs',
-        appId: '33gamhJ1FCjBelYzHVs',
+        clientId: '71937',
+        appId: '71937',
         redirectUri: 'https://brixxie-theta.vercel.app/callback',
         botsFolder: 'profithub',
         includeLegacyAppIdInOAuth: true,
@@ -44,8 +44,8 @@ export const DOMAIN_CONFIG: Record<string, DomainConfig> = {
     // Production domain: www.profithub.co.ke
     // Uses dedicated ProfitHub Deriv OAuth app (separate from Brixxie)
     'www.profithub.co.ke': {
-        clientId: '33gamhJ1FCjBelYzHVs', // ProfitHub CLIENT_ID from Deriv app
-        appId: '33gamhJ1FCjBelYzHVs', // ProfitHub APP_ID from Deriv app
+        clientId: '71937', // ProfitHub CLIENT_ID from Deriv app
+        appId: '71937', // ProfitHub APP_ID from Deriv app
         redirectUri: 'https://www.profithub.co.ke/callback',
         botsFolder: 'profithub',
         includeLegacyAppIdInOAuth: true,
