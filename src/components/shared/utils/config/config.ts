@@ -90,18 +90,14 @@ export function isLocal(): boolean {
 // =============================================================================
 
 const getDefaultServerURL = (): string => {
-    const isProd = isProduction();
-    // Use the new DerivWS public WebSocket endpoint
-    const baseUrl = brandConfig.platform.derivws.url[isProd ? 'production' : 'staging'];
-    const directory = brandConfig.platform.derivws.directories.options;
-    return `${baseUrl.replace('https://', 'wss://')}${directory}ws/public`;
+    const { appId } = getDomainConfig();
+    // Use the standard public Deriv WebSocket endpoint for DerivAPIBasic
+    return `wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`;
 };
 
 const getLegacyServerURL = (): string => {
-    const isProd = isProduction();
-    const baseUrl = brandConfig.platform.derivws.url[isProd ? 'production' : 'staging'];
-    const directory = brandConfig.platform.derivws.directories.options;
-    return `${baseUrl.replace('https://', 'wss://')}${directory}ws/public`;
+    const { appId } = getDomainConfig();
+    return `wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`;
 };
 
 /**

@@ -671,11 +671,12 @@ class APIBase {
             const activeSymbolsPromise = doUntilDone(() => this.api?.send({ active_symbols: 'brief' }), [], this);
 
             const apiResult = await Promise.race([activeSymbolsPromise, timeout]);
-            console.log('[Deriv] Active symbols raw response received:', apiResult);
+            console.log('[Deriv] Active symbols raw response received:', JSON.stringify(apiResult, null, 2));
 
             const { active_symbols = [], error = {} } = apiResult as any;
 
             if (error && Object.keys(error).length > 0) {
+                console.error('[Deriv] Trading API Error:', JSON.stringify(error, null, 2));
                 throw new Error(`Active symbols API error: ${error.message || 'Unknown error'}`);
             }
 

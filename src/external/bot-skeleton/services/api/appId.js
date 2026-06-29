@@ -117,7 +117,7 @@ export const generateDerivApiInstance = async (forceNew = false) => {
                 if (request && typeof request === 'object' && !request.req_id) {
                     request.req_id = Date.now() + Math.random().toString(36).substr(2, 9);
                 }
-                console.log('[Deriv] Sending request:', request);
+                console.log('[Deriv] Sending request:', JSON.stringify(request, null, 2));
 
                 if (isApiTokenSession() && request && typeof request === 'object') {
                     if ('balance' in request) assertApiTokenScope('read');
@@ -132,6 +132,11 @@ export const generateDerivApiInstance = async (forceNew = false) => {
                     }
                 }
                 return rawSend(request);
+            };
+
+            // Log all incoming messages
+            deriv_socket.onmessage = (event) => {
+                console.log('[Deriv] Incoming message:', event.data);
             };
 
             // Store the instance
