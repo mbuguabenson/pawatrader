@@ -95,7 +95,7 @@ const setLocalStorageToken = async (
 
             // Also store accounts in DerivWSAccountsService for centralized handling
             try {
-                const deriv_accounts = loginInfo.map(acc => ({
+                const deriv_accounts = loginInfo.map((acc: any) => ({
                     account_id: acc.loginid,
                     balance: acc.balance || '0',
                     currency: acc.currency || '',
@@ -110,7 +110,7 @@ const setLocalStorageToken = async (
 
             URLUtils.filterSearchParams(paramsToDelete);
 
-            const selectedLoginInfo = defaultActiveAccount;
+            const selectedLoginInfo = defaultActiveAccount as any;
             const selectedToken = selectedLoginInfo.token;
             const selectedLoginId = selectedLoginInfo.loginid;
 

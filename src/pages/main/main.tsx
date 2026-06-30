@@ -9,12 +9,13 @@ import Dialog from '@/components/shared_ui/dialog';
 import MobileWrapper from '@/components/shared_ui/mobile-wrapper';
 import Tabs from '@/components/shared_ui/tabs/tabs';
 import TradingViewModal from '@/components/trading-view-chart/trading-view-modal';
+import BotBuilder from '@/pages/bot-builder';
 import { DBOT_TABS, TAB_IDS } from '@/constants/bot-contents';
 import Matches from '@/pages/matches';
 import { api_base, updateWorkspaceName } from '@/external/bot-skeleton';
 import { CONNECTION_STATUS } from '@/external/bot-skeleton/services/api/observables/connection-status-stream';
 import { isDbotRTL } from '@/external/bot-skeleton/utils/workspace';
-import { useOauth2 } from '@/hooks/auth/useOauth2';
+
 import { useApiBase } from '@/hooks/useApiBase';
 import { useStore } from '@/hooks/useStore';
 import useTMB from '@/hooks/useTMB';
@@ -23,7 +24,7 @@ import {
     LabelPairedObjectsColumnCaptionRegularIcon,
     LabelPairedPuzzlePieceTwoCaptionBoldIcon,
 } from '@deriv/quill-icons/LabelPaired';
-import { LegacyChartsIcon, LegacyGuide1pxIcon, LegacyIndicatorsIcon } from '@deriv/quill-icons/Legacy';
+import { LegacyChartsIcon, LegacyIndicatorsIcon } from '@deriv/quill-icons/Legacy';
 import { Localize, localize } from '@deriv-com/translations';
 import { useDevice } from '@deriv-com/ui';
 import RunPanel from '../../components/run-panel';
@@ -33,6 +34,19 @@ import Dashboard from '../dashboard';
 import RunStrategy from '../dashboard/run-strategy';
 import './main.scss';
 
+// Declare Blockly extension for TypeScript
+declare global {
+    interface Window {
+        Blockly?: {
+            derivWorkspace?: {
+                trashcan?: {
+                    setTrashcanPosition?: (x: number, y: number) => void;
+                };
+            };
+        };
+    }
+}
+
 const ChartWrapper = lazy(() => import('../chart/chart-wrapper'));
 
 const TradingView = lazy(() => import('../tradingview'));
@@ -40,7 +54,6 @@ const TradingView = lazy(() => import('../tradingview'));
 const AnalysisTools = lazy(() => import('../analysis-tool'));
 const CopyTrading = lazy(() => import('../copy-trading'));
 const Strategies = lazy(() => import('../free-bots/strategies'));
-const ProTool = lazy(() => import('../pro-tool'));
 const Dtrader = lazy(() => import('../dtrader'));
 // Import TradingBots directly instead of lazy loading for faster access
 import TradingBots from '../free-bots/trading-bots';
@@ -69,11 +82,16 @@ const AppWrapper = observer(() => {
         stopBot,
     } = run_panel;
     const { is_open } = quick_strategy;
-    const { cancel_button_text, ok_button_text, title, message, dismissable, is_closed_on_cancel } = dialog_options as {
-        [key: string]: string;
+    const { cancel_button_text, ok_button_text, title, message, dismissable, is_closed_on_cancel } = dialog_options as unknown as {
+        cancel_button_text?: string;
+        ok_button_text?: string;
+        title?: React.ReactNode;
+        message?: React.ReactNode;
+        dismissable?: boolean;
+        is_closed_on_cancel?: boolean;
     };
     const { clear } = summary_card;
-    const { DASHBOARD, BOT_BUILDER, STRATEGIES, TRADING_BOTS } = DBOT_TABS;
+    const { DASHBOARD, BOT_BUILDER } = DBOT_TABS;
     const init_render = React.useRef(true);
     const hash = [
         'dashboard',
@@ -100,7 +118,7 @@ const AppWrapper = observer(() => {
     };
     const active_hash_tab = GetHashedValue(active_tab);
 
-    const { onRenderTMBCheck, isTmbEnabled } = useTMB();
+    const { onRenderTMBCheck, isTmbEnabled, isOAuth2Enabled } = useTMB();
 
     // Removed intersection observer for tab shadows to fix mobile edge fading
 
@@ -160,7 +178,7 @@ const AppWrapper = observer(() => {
 
     React.useEffect(() => {
         const trashcan_init_id = setTimeout(() => {
-            if (active_tab === BOT_BUILDER && Blockly?.derivWorkspace?.trashcan) {
+            if (active_tab === BOT_BUILDER && (window as any).Blockly?.derivWorkspace?.trashcan) {
                 const trashcanY = window.innerHeight - 250;
                 let trashcanX;
                 if (is_drawer_open) {
@@ -168,7 +186,7 @@ const AppWrapper = observer(() => {
                 } else {
                     trashcanX = isDbotRTL() ? 20 : window.innerWidth - 100;
                 }
-                Blockly?.derivWorkspace?.trashcan?.setTrashcanPosition(trashcanX, trashcanY);
+                (window as any).Blockly?.derivWorkspace?.trashcan?.setTrashcanPosition?.(trashcanX, trashcanY);
             }
         }, 100);
 
@@ -207,7 +225,6 @@ const AppWrapper = observer(() => {
         [active_tab]
     );
 
-    const { isOAuth2Enabled } = useOauth2();
     const handleLoginGeneration = async () => {
         if (!isOAuth2Enabled) {
             window.location.replace(await generateOAuthURL());
@@ -233,6 +250,18 @@ const AppWrapper = observer(() => {
             console.error(error);
         }
     };
+    // Create mock history object
+    const history = {
+        location: {
+            pathname: location.pathname,
+            search: location.search,
+            hash: location.hash,
+        },
+        replace: (url: string) => {
+            window.history.replaceState({}, '', url);
+        },
+    } as unknown as History;
+
     return (
         <React.Fragment>
             <div className='main'>
@@ -242,7 +271,7 @@ const AppWrapper = observer(() => {
                     })}
                 >
                     <div>
-                        <Tabs active_index={active_tab} className='main__tabs' onTabItemClick={handleTabChange} top>
+                        <Tabs active_index={active_tab} className='main__tabs' onTabItemClick={handleTabChange} top history={history}>
                             <div
                                 label={
                                     <>
@@ -285,7 +314,9 @@ const AppWrapper = observer(() => {
                                     </>
                                 }
                                 id='id-bot-builder'
-                            />
+                            >
+                                <BotBuilder />
+                            </div>
                             <div
                                 label={
                                     <>
@@ -441,14 +472,14 @@ const AppWrapper = observer(() => {
                 has_close_icon
                 is_mobile_full_width={false}
                 is_visible={is_dialog_open}
-                onCancel={onCancelButtonClick}
-                onClose={onCloseDialog}
+                onCancel={onCancelButtonClick ?? undefined}
+                onClose={onCloseDialog ?? undefined}
                 onConfirm={onOkButtonClick || onCloseDialog}
                 portal_element_id='modal_root'
                 title={title}
                 login={handleLoginGeneration}
-                dismissable={dismissable} // Prevents closing on outside clicks
-                is_closed_on_cancel={is_closed_on_cancel}
+                dismissable={typeof dismissable === 'boolean' ? dismissable : undefined} // Prevents closing on outside clicks
+                is_closed_on_cancel={typeof is_closed_on_cancel === 'boolean' ? is_closed_on_cancel : undefined}
             >
                 {message}
             </Dialog>

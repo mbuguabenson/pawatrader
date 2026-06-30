@@ -7,6 +7,7 @@ import {
     V2GetActiveToken,
     V2GetActiveClientId,
 } from '@/external/bot-skeleton/services/api/appId';
+import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 import { contract_stages } from '@/constants/contract-stage';
 import { useStore } from '@/hooks/useStore';
 import './hyperbot.css';
@@ -81,11 +82,14 @@ const Hyperbot = observer(() => {
             const api = await generateDerivApiInstance();
             apiRef.current = api;
 
-            // Load symbols
+            // Load symbols from api_base
             try {
-                const { active_symbols, error } = await api.send({ active_symbols: 'brief' });
-                if (error) throw error;
-                const syn = (active_symbols || [])
+                // Wait for api_base to load symbols if not already loaded
+                if (!api_base.has_active_symbols && api_base.active_symbols_promise) {
+                    await api_base.active_symbols_promise;
+                }
+                const active_symbols = api_base.active_symbols || [];
+                const syn = active_symbols
                     .filter(s => /synthetic/i.test(s.market) || /^R_/.test(s.symbol))
                     .map(s => ({ symbol: s.symbol, display_name: s.display_name }));
                 setSymbols(syn);

@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize } from '@deriv-com/translations';
+import { getDomainConfig } from '@/components/shared/utils/config/config';
 import IframeWrapper from '@/components/iframe-wrapper';
 import './smart-trader.scss';
 
@@ -22,8 +22,9 @@ const SmartTrader = observer(() => {
             const initializeSignals = () => {
                 // Store ticks per subscribed symbol (filled dynamically)
                 const ticksStorage: { [key: string]: number[] } = {};
+                const { appId } = getDomainConfig();
 
-                const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=80058');
+                const ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`);
 
                 const subscribeTicks = (symbol: string) => {
                     ws.send(
@@ -33,6 +34,7 @@ const SmartTrader = observer(() => {
                             end: 'latest',
                             style: 'ticks',
                             subscribe: 1,
+                            req_id: Date.now() + Math.floor(Math.random() * 1000),
                         })
                     );
                 };
@@ -44,6 +46,7 @@ const SmartTrader = observer(() => {
                     ws.send(
                         JSON.stringify({
                             active_symbols: 'brief',
+                            req_id: Date.now() + Math.floor(Math.random() * 1000),
                         })
                     );
 
@@ -271,6 +274,8 @@ const SmartTrader = observer(() => {
                                 value={tradingMode}
                                 onChange={e => setTradingMode(e.target.value)}
                                 className='smart-trader__mode-dropdown'
+                                aria-label="Select trading mode"
+                                title="Select trading mode"
                             >
                                 {TRADING_MODES.map(mode => (
                                     <option key={mode.value} value={mode.value}>

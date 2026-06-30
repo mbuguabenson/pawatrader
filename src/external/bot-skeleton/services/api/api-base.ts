@@ -76,8 +76,8 @@ class APIBase {
     reconnection_attempts: number = 0;
 
     // Constants for timeouts - extracted magic numbers for better maintainability
-    private readonly ACTIVE_SYMBOLS_TIMEOUT_MS = 30000; // 30 seconds
-    private readonly ENRICHMENT_TIMEOUT_MS = 30000; // 30 seconds
+    private readonly ACTIVE_SYMBOLS_TIMEOUT_MS = 10000; // 10 seconds (faster fail)
+    private readonly ENRICHMENT_TIMEOUT_MS = 10000; // 10 seconds (faster fail)
     private readonly MAX_RECONNECTION_ATTEMPTS = 5; // Maximum number of reconnection attempts before session reset
 
     is_initializing = false;
@@ -653,35 +653,44 @@ class APIBase {
     }
 
     getActiveSymbols = async () => {
-        console.log('[Deriv] Requesting active symbols...');
+        if (this.active_symbols_promise) {
+            await this.active_symbols_promise;
+            return this.active_symbols;
+        }
+
         if (!this.api) {
             console.error('[Deriv] API connection not available for fetching active symbols');
-            // Fail gracefully — allow app to continue
             this.has_active_symbols = true;
             this.toggleRunButton(false);
             return [];
         }
 
         try {
-            // Add timeout to prevent hanging
             const timeout = new Promise((_, reject) =>
                 setTimeout(() => reject(new Error('Active symbols fetch timeout')), this.ACTIVE_SYMBOLS_TIMEOUT_MS)
             );
 
             const activeSymbolsPromise = doUntilDone(() => this.api?.send({ active_symbols: 'brief' }), [], this);
-
+            
+            // Set the promise before await so other callers can wait on it too
+            this.active_symbols_promise = activeSymbolsPromise.then(() => undefined);
+            
             const apiResult = await Promise.race([activeSymbolsPromise, timeout]);
-            console.log('[Deriv] Active symbols raw response received:', JSON.stringify(apiResult, null, 2));
 
             const { active_symbols = [], error = {} } = apiResult as any;
 
             if (error && Object.keys(error).length > 0) {
                 console.error('[Deriv] Trading API Error:', JSON.stringify(error, null, 2));
-                throw new Error(`Active symbols API error: ${error.message || 'Unknown error'}`);
+                this.has_active_symbols = true;
+                this.toggleRunButton(false);
+                return [];
             }
 
             if (!active_symbols.length) {
-                throw new Error('No active symbols received from API');
+                console.warn('[Deriv] No active symbols received from API');
+                this.has_active_symbols = true;
+                this.toggleRunButton(false);
+                return [];
             }
 
             this.has_active_symbols = true;
@@ -709,7 +718,6 @@ class APIBase {
             return this.active_symbols;
         } catch (error) {
             console.error('[Deriv] Failed to fetch and process active symbols:', error);
-            // Fail gracefully — don't break the entire app!
             this.has_active_symbols = true;
             this.toggleRunButton(false);
             return [];

@@ -16,41 +16,64 @@ export default class ActiveSymbols {
     }
 
     async retrieveActiveSymbols(is_forced_update = false) {
-        await this.trading_times.initialise();
-
-        if (!is_forced_update && this.is_initialised) {
-            await this.init_promise;
-            return this.active_symbols;
-        }
-
-        this.is_initialised = true;
-
-        if (api_base.has_active_symbols) {
-            this.active_symbols = api_base?.active_symbols ?? [];
-        } else {
-            await api_base.active_symbols_promise;
-            this.active_symbols = api_base?.active_symbols ?? [];
-        }
-
-        this.processed_symbols = this.processActiveSymbols();
-
-        // TODO: fix need to look into it as the method is not present
-        this.trading_times.onMarketOpenCloseChanged = changes => {
-            Object.keys(changes).forEach(symbol_name => {
-                const symbol_obj = this.active_symbols[symbol_name];
-
-                if (symbol_obj) {
-                    symbol_obj.exchange_is_open = changes[symbol_name];
-                }
+        try {
+            // Add timeout to prevent hanging on trading_times.initialise() or anything else
+            const timeout = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('Active symbols retrieval timeout')), 10000);
             });
 
-            this.changes = changes;
-            this.processActiveSymbols();
-        };
+            const retrieveTask = (async () => {
+                try {
+                    await Promise.race([this.trading_times.initialise(), timeout]);
+                } catch (tradingTimesError) {
+                    console.warn('[ActiveSymbols] Trading times init failed, continuing without them:', tradingTimesError);
+                }
 
-        this.init_promise.resolve();
+                if (!is_forced_update && this.is_initialised) {
+                    await this.init_promise;
+                    return this.active_symbols;
+                }
 
-        return this.active_symbols;
+                this.is_initialised = true;
+
+                if (api_base.has_active_symbols) {
+                    this.active_symbols = api_base?.active_symbols ?? [];
+                } else if (api_base.active_symbols_promise) {
+                    await api_base.active_symbols_promise;
+                    this.active_symbols = api_base?.active_symbols ?? [];
+                } else {
+                    this.active_symbols = [];
+                }
+
+                this.processed_symbols = this.processActiveSymbols();
+
+                // TODO: fix need to look into it as the method is not present
+                this.trading_times.onMarketOpenCloseChanged = changes => {
+                    Object.keys(changes).forEach(symbol_name => {
+                        const symbol_obj = this.active_symbols[symbol_name];
+
+                        if (symbol_obj) {
+                            symbol_obj.exchange_is_open = changes[symbol_name];
+                        }
+                    });
+
+                    this.changes = changes;
+                    this.processActiveSymbols();
+                };
+
+                this.init_promise.resolve();
+
+                return this.active_symbols;
+            })();
+
+            return await Promise.race([retrieveTask, timeout]);
+        } catch (error) {
+            console.error('[ActiveSymbols] Error retrieving active symbols:', error);
+            // Resolve init_promise even if there's an error so app doesn't hang
+            this.is_initialised = true;
+            this.init_promise.resolve();
+            return [];
+        }
     }
 
     processActiveSymbols() {

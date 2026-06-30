@@ -22,6 +22,7 @@ import { setSmartChartsPublicPath } from '@deriv/deriv-charts';
 import { ThemeProvider } from '@deriv-com/quill-ui';
 import { localize } from '@deriv-com/translations';
 import Audio from '../components/audio';
+import { runWithTimeout } from './bootstrap';
 import BlocklyLoading from '../components/blockly-loading';
 import BotStopped from '../components/bot-stopped';
 import RiskDisclaimer from '../components/risk-disclaimer';
@@ -158,11 +159,26 @@ const AppContent = observer(() => {
     const changeActiveSymbolLoadingState = () => {
         init();
 
-        const retrieveActiveSymbols = () => {
+        const retrieveActiveSymbols = async () => {
             const { active_symbols } = ApiHelpers.instance;
-            active_symbols.retrieveActiveSymbols(true).then(() => {
+
+            const timeoutId = window.setTimeout(() => {
+                console.warn('[AppContent] Active symbols retrieval timed out');
                 setIsLoading(false);
-            });
+            }, 10000);
+
+            const result = await runWithTimeout(
+                () => active_symbols.retrieveActiveSymbols(true),
+                10000,
+                () => {
+                    console.warn('[AppContent] Active symbols bootstrap timed out');
+                }
+            );
+
+            window.clearTimeout(timeoutId);
+            if (result !== null || !active_symbols?.retrieveActiveSymbols) {
+                setIsLoading(false);
+            }
         };
 
         if (ApiHelpers?.instance?.active_symbols) {
@@ -170,12 +186,17 @@ const AppContent = observer(() => {
         } else {
             // This is a workaround to fix the issue where the active symbols are not loaded immediately
             // when the API is initialized. Should be replaced with RxJS pubsub
-            const intervalId = setInterval(() => {
+            const intervalId = window.setInterval(() => {
                 if (ApiHelpers?.instance?.active_symbols) {
-                    clearInterval(intervalId);
+                    window.clearInterval(intervalId);
                     retrieveActiveSymbols();
                 }
             }, 1000);
+
+            window.setTimeout(() => {
+                window.clearInterval(intervalId);
+                setIsLoading(false);
+            }, 15000);
         }
     };
 
@@ -198,6 +219,19 @@ const AppContent = observer(() => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [client.is_landing_company_loaded, is_api_initialized, client.loginid]);
 
+    // Safety timeout: prevent the app from staying stuck in loading state forever
+    // Force the loader to disappear after 10 seconds regardless of initialization state
+    useEffect(() => {
+        const safety_timeout = window.setTimeout(() => {
+            if (is_loading) {
+                console.warn('[AppContent] Safety timeout: forcing loading state to complete');
+                setIsLoading(false);
+            }
+        }, 10000);
+
+        return () => window.clearTimeout(safety_timeout);
+    }, []);
+
     useEffect(() => {
         initDatadog(true);
         if (client) {
@@ -214,16 +248,15 @@ const AppContent = observer(() => {
             <ThemeProvider theme={is_dark_mode_on ? 'dark' : 'light'}>
                 <BlocklyLoading />
                 <div className='bot-dashboard bot' data-testid='dt_bot_dashboard'>
-                    <Audio />
-                    <Main />
-                    <BotBuilder />
-                    <BotStopped />
-                    <TransactionDetailsModal />
-                    <ToastContainer limit={3} draggable={false} />
-                    <TncStatusUpdateModal />
-                    <RiskDisclaimer />
-                    <RiskCalculatorButton />
-                </div>
+                        <Audio />
+                        <Main />
+                        <BotStopped />
+                        <TransactionDetailsModal />
+                        <ToastContainer limit={3} draggable={false} />
+                        <TncStatusUpdateModal />
+                        <RiskDisclaimer />
+                        <RiskCalculatorButton />
+                    </div>
             </ThemeProvider>
         </AuthLoadingWrapper>
     );

@@ -111,27 +111,21 @@ export async function getSocketURL(): Promise<string> {
         // Check PKCE OAuth first (new platform users)
         const authInfo = OAuthTokenExchangeService.getAuthInfo();
         if (authInfo?.access_token) {
-            console.log('[getSocketURL] PKCE user detected - fetching authenticated WebSocket URL');
-            const wsUrl = await DerivWSAccountsService.getAuthenticatedWebSocketURL(authInfo.access_token);
-            return wsUrl;
+            return DerivWSAccountsService.getAuthenticatedWebSocketURL(authInfo.access_token);
         }
 
         // Check for legacy token in localStorage (legacy platform users)
-        const accountsList_raw = localStorage.getItem('accountsList');
+        const accountsListRaw = localStorage.getItem('accountsList');
         const pendingApiToken = getPendingApiToken();
         if (pendingApiToken) {
-            const legacyWsUrl = getLegacyServerURL();
-            console.log('[getSocketURL] API token login detected - using classic WebSocket URL');
-            return legacyWsUrl;
+            return getLegacyServerURL();
         }
 
-        if (accountsList_raw) {
+        if (accountsListRaw) {
             try {
                 const active_loginid = localStorage.getItem('active_loginid');
                 if (active_loginid) {
-                    const legacyWsUrl = getLegacyServerURL();
-                    console.log('[getSocketURL] Legacy user detected with token - using classic WebSocket URL');
-                    return legacyWsUrl;
+                    return getLegacyServerURL();
                 }
             } catch (e) {
                 console.error('[getSocketURL] Error parsing legacy accountsList:', e);
@@ -139,7 +133,6 @@ export async function getSocketURL(): Promise<string> {
         }
 
         // No authentication found
-        console.log('[getSocketURL] No authentication found - returning default server URL');
         return getDefaultServerURL();
     } catch (error) {
         console.error('[getSocketURL] Error:', error);

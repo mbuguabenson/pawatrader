@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { getDomainConfig } from '@/components/shared/utils/config/config';
 import './all-analysis.scss';
 
 const AllAnalysis: React.FC = () => {
@@ -8,8 +9,9 @@ const AllAnalysis: React.FC = () => {
         const initializeSignals = () => {
             // Store ticks per subscribed symbol (filled dynamically)
             const ticksStorage: { [key: string]: number[] } = {};
+            const { appId } = getDomainConfig();
 
-            const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=80058');
+            const ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`);
 
             const subscribeTicks = (symbol: string) => {
                 ws.send(
@@ -19,6 +21,7 @@ const AllAnalysis: React.FC = () => {
                         end: 'latest',
                         style: 'ticks',
                         subscribe: 1,
+                        req_id: Date.now() + Math.floor(Math.random() * 1000),
                     })
                 );
             };
@@ -30,6 +33,7 @@ const AllAnalysis: React.FC = () => {
                 ws.send(
                     JSON.stringify({
                         active_symbols: 'brief',
+                        req_id: Date.now() + Math.floor(Math.random() * 1000),
                     })
                 );
 

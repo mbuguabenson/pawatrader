@@ -74,6 +74,18 @@ export class OAuthTokenExchangeService {
     }
 
     /**
+     * Set authentication info in sessionStorage
+     * @param authInfo AuthInfo object to store
+     */
+    static setAuthInfo(authInfo: AuthInfo): void {
+        try {
+            sessionStorage.setItem('auth_info', JSON.stringify(authInfo));
+        } catch (error) {
+            ErrorLogger.error('OAuth', 'Error setting auth_info', error);
+        }
+    }
+
+    /**
      * Check if user is authenticated (has valid access token)
      * @returns true if authenticated with valid token
      */

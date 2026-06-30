@@ -11,6 +11,13 @@ import {
 import { getStrategyType } from '../analytics/utils';
 import RootStore from './root-store';
 
+declare global {
+    interface Window {
+        gapi?: any;
+        google?: any;
+    }
+}
+
 export type TErrorWithStatus = Error & { status?: number; result?: { error: { message: string } } };
 
 export type TFileOptions = {
@@ -65,8 +72,10 @@ export default class GoogleDriveStore {
         this.client = null;
         this.access_token = localStorage.getItem('google_access_token') ?? '';
         setTimeout(() => {
-            importExternal('https://accounts.google.com/gsi/client').then(() => this.initialiseClient());
-            importExternal('https://apis.google.com/js/api.js').then(() => this.initialise());
+            if (this.client_id && this.api_key && this.app_id) {
+                importExternal('https://accounts.google.com/gsi/client').then(() => this.initialiseClient());
+                importExternal('https://apis.google.com/js/api.js').then(() => this.initialise());
+            }
         }, 3000);
     }
 
@@ -87,7 +96,7 @@ export default class GoogleDriveStore {
     };
 
     initialise = () => {
-        gapi.load('client:picker', () => gapi.client.load(this.discovery_docs));
+        window.gapi?.load('client:picker', () => window.gapi?.client?.load?.(this.discovery_docs));
     };
 
     setGoogleDriveTokenExpiry = (seconds: number) => {
@@ -97,7 +106,7 @@ export default class GoogleDriveStore {
     };
 
     initialiseClient = () => {
-        this.client = google.accounts.oauth2.initTokenClient({
+        this.client = window.google?.accounts?.oauth2?.initTokenClient?.({
             client_id: this.client_id,
             scope: this.scope,
             callback: (response: { expires_in: number; access_token: string; error?: TErrorWithStatus }) => {
@@ -132,6 +141,7 @@ export default class GoogleDriveStore {
     };
 
     async signIn() {
+        if (!this.client_id || !this.api_key || !this.app_id) return;
         if (!this.is_authorised) {
             await this.client.requestAccessToken();
         }
@@ -162,9 +172,10 @@ export default class GoogleDriveStore {
     }
 
     async saveFile(options: TFileOptions) {
+        if (!this.client_id || !this.api_key || !this.app_id) return;
         try {
             await this.signIn();
-            if (this.access_token) gapi.client.setToken({ access_token: this.access_token });
+            if (this.access_token) window.gapi?.client?.setToken?.({ access_token: this.access_token });
             await this.checkFolderExists();
             await this.createSaveFilePicker('application/vnd.google-apps.folder', localize('Select a folder'), options);
         } catch (err) {
@@ -175,12 +186,13 @@ export default class GoogleDriveStore {
     }
 
     async loadFile() {
+        if (!this.client_id || !this.api_key || !this.app_id) return;
         if (!this.is_google_drive_token_valid) return;
         await this.signIn();
 
-        if (this.access_token) gapi.client.setToken({ access_token: this.access_token });
+        if (this.access_token) window.gapi?.client?.setToken?.({ access_token: this.access_token });
         try {
-            await gapi.client.drive.files.list({
+            await window.gapi?.client?.drive?.files?.list?.({
                 pageSize: 10,
                 fields: 'files(id, name)',
             });
@@ -222,10 +234,11 @@ export default class GoogleDriveStore {
     }
 
     async checkFolderExists() {
-        const { files } = gapi.client.drive;
+        const files = window.gapi?.client?.drive?.files;
+        if (!files) return;
         const response = await files.list({ q: 'trashed=false' });
         const mime_type = 'application/vnd.google-apps.folder';
-        const folder = response.result.files?.find(file => file.mimeType === mime_type);
+        const folder = response?.result?.files?.find((file: any) => file.mimeType === mime_type);
 
         if (folder) {
             return;
@@ -244,7 +257,7 @@ export default class GoogleDriveStore {
         const { setButtonStatus } = this.root_store.save_modal;
         return new Promise<void>(resolve => {
             const savePickerCallback = (data: TPickerCallbackResponse) => {
-                if (data.action === google.picker.Action.PICKED) {
+                if (data.action === window.google?.picker?.Action?.PICKED) {
                     const folder_id = data.docs[0].id;
                     const strategy_file = new Blob([options.content], { type: options.mimeType });
                     const strategy_file_metadata = JSON.stringify({
@@ -270,7 +283,7 @@ export default class GoogleDriveStore {
                         resolve();
                     };
                     xhr.send(form_data);
-                } else if (data.action === google.picker.Action.CANCEL) {
+                } else if (data.action === window.google?.picker?.Action?.CANCEL) {
                     setButtonStatus(button_status.NORMAL);
                 }
             };
@@ -290,7 +303,7 @@ export default class GoogleDriveStore {
     createLoadFilePicker(mime_type: string, title: string) {
         return new Promise(resolve => {
             const loadPickerCallback = async (data: TPickerCallbackResponse) => {
-                if (data.action === google.picker.Action.PICKED) {
+                if (data.action === window.google?.picker?.Action?.PICKED) {
                     const file = data.docs[0];
                     if (file?.driveError === 'NETWORK') {
                         rudderStackSendUploadStrategyFailedEvent({
@@ -304,7 +317,8 @@ export default class GoogleDriveStore {
 
                     const file_name = file.name;
                     const fileId = file.id;
-                    const { files } = gapi.client.drive;
+                    const files = window.gapi?.client?.drive?.files;
+                    if (!files) return;
 
                     const response = await files.get({
                         alt: 'media',
@@ -331,14 +345,17 @@ export default class GoogleDriveStore {
         title: string,
         callback: (data: TPickerCallbackResponse) => void
     ) {
-        const docs_view = new google.picker.DocsView();
+        const googlePicker = window.google?.picker;
+        if (!googlePicker) return;
+
+        const docs_view = new googlePicker.DocsView();
         docs_view.setIncludeFolders(true);
         docs_view.setMimeTypes(mime_type);
 
         if (is_save) {
             docs_view.setSelectFolderEnabled(true);
         }
-        const picker = new google.picker.PickerBuilder();
+        const picker = new googlePicker.PickerBuilder();
         picker
             .setOrigin(`${window.location.protocol}//${window.location.host}`)
             .setTitle(localize(title))

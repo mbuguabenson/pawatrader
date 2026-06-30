@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Localize } from '@deriv-com/translations';
+import { getDomainConfig } from '@/components/shared/utils/config/config';
 import './tick-analyser.scss';
 
 type ViewMode = 'summary' | 'detailed';
@@ -53,7 +54,8 @@ const TickAnalyser: React.FC = () => {
     ];
 
     useEffect(() => {
-        const ws = new WebSocket('wss://ws.binaryws.com/websockets/v3?app_id=80058');
+        const { appId } = getDomainConfig();
+        const ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${encodeURIComponent(appId)}`);
         wsRef.current = ws;
 
         ws.onopen = () => {
@@ -66,6 +68,7 @@ const TickAnalyser: React.FC = () => {
                     end: 'latest',
                     style: 'ticks',
                     subscribe: 1,
+                    req_id: Date.now() + Math.floor(Math.random() * 1000),
                 })
             );
         };
@@ -141,7 +144,6 @@ const TickAnalyser: React.FC = () => {
         for (let i = 1; i < ticks.length; i++) {
             const prevPrice = ticks[i - 1].price;
             const currPrice = ticks[i].price;
-            const prevLastDigit = parseInt(prevPrice.toString().slice(-1));
             const currLastDigit = parseInt(currPrice.toString().slice(-1));
 
             lastDigitsArray.push(currLastDigit);
@@ -360,10 +362,15 @@ const TickAnalyser: React.FC = () => {
             <div className='tick-analyser__detailed'>
                 <div className='detailed-controls'>
                     <div className='control-group'>
-                        <label>
+                        <label htmlFor='symbol-select'>
                             <Localize i18n_default_text='Symbol' />
                         </label>
-                        <select value={selectedSymbol} onChange={e => setSelectedSymbol(e.target.value)}>
+                        <select
+                            id='symbol-select'
+                            value={selectedSymbol}
+                            onChange={e => setSelectedSymbol(e.target.value)}
+                            aria-label='Select symbol'
+                        >
                             {symbols.map(symbol => (
                                 <option key={symbol.value} value={symbol.value}>
                                     {symbol.label}
@@ -372,15 +379,17 @@ const TickAnalyser: React.FC = () => {
                         </select>
                     </div>
                     <div className='control-group'>
-                        <label>
+                        <label htmlFor='tick-count'>
                             <Localize i18n_default_text='Tick Count' />
                         </label>
                         <input
+                            id='tick-count'
                             type='number'
                             value={tickCount}
                             onChange={e => setTickCount(Math.max(100, parseInt(e.target.value) || 1000))}
                             min='100'
                             max='10000'
+                            placeholder='Enter tick count'
                         />
                     </div>
                 </div>
@@ -577,14 +586,18 @@ const TickAnalyser: React.FC = () => {
             <div className='tick-analyser__header'>
                 <div className='tick-analyser__tabs'>
                     <button
+                        type='button'
                         className={`tick-analyser__tab ${viewMode === 'summary' ? 'active' : ''}`}
                         onClick={() => setViewMode('summary')}
+                        aria-label='Switch to summary view'
                     >
                         <Localize i18n_default_text='Summary' />
                     </button>
                     <button
+                        type='button'
                         className={`tick-analyser__tab ${viewMode === 'detailed' ? 'active' : ''}`}
                         onClick={() => setViewMode('detailed')}
+                        aria-label='Switch to detailed view'
                     >
                         <Localize i18n_default_text='Detailed' />
                     </button>
@@ -594,6 +607,7 @@ const TickAnalyser: React.FC = () => {
                         className='tick-analyser__market-select'
                         value={selectedSymbol}
                         onChange={e => setSelectedSymbol(e.target.value)}
+                        aria-label='Select symbol'
                     >
                         {symbols.map(symbol => (
                             <option key={symbol.value} value={symbol.value}>

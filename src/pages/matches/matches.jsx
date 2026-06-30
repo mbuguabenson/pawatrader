@@ -7,6 +7,7 @@ import {
     V2GetActiveToken,
     V2GetActiveClientId,
 } from '@/external/bot-skeleton/services/api/appId';
+import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 import { contract_stages } from '@/constants/contract-stage';
 import { DBOT_TABS } from '@/constants/bot-contents';
 import { useStore } from '@/hooks/useStore';
@@ -77,7 +78,7 @@ const Matches = observer(() => {
             }
             apiRef.current = api;
 
-            // Wait for the WebSocket to be OPEN before calling active_symbols
+            // Wait for the WebSocket to be OPEN before proceeding
             await new Promise(resolve => {
                 const ws = api?.connection;
                 if (!ws || ws.readyState === WebSocket.OPEN) {
@@ -90,11 +91,14 @@ const Matches = observer(() => {
                 setTimeout(resolve, 5000);
             });
 
-            // Load symbols - Volatility and Jump Index markets
+            // Load symbols from api_base
             try {
-                const { active_symbols, error } = await api.send({ active_symbols: 'brief' });
-                if (error) throw new Error(JSON.stringify(error));
-                const syn = (active_symbols || [])
+                // Wait for api_base to load symbols if not already loaded
+                if (!api_base.has_active_symbols && api_base.active_symbols_promise) {
+                    await api_base.active_symbols_promise;
+                }
+                const active_symbols = api_base.active_symbols || [];
+                const syn = active_symbols
                     .filter(s => {
                         // Include all Volatility Index markets, including standard and (1s) variants
                         return /Volatility.*Index/i.test(s.display_name);
@@ -110,7 +114,7 @@ const Matches = observer(() => {
                         return Number(isOneA) - Number(isOneB);
                     });
                 if (syn.length === 0) {
-                    console.warn('[Matches] active_symbols returned 0 volatility markets. Total symbols received:', active_symbols?.length);
+                    console.warn('[Matches] active_symbols returned 0 volatility markets. Total symbols received:', active_symbols.length);
                 }
                 setSymbols(syn);
                 if (syn[0]?.symbol) {

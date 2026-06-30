@@ -51,7 +51,7 @@ const router = createBrowserRouter(
                 <div className='app-error-state'>
                     <h1>🚨 Application Error</h1>
                     <p>Something went wrong. Please check the console for more details.</p>
-                    <button onClick={() => window.location.reload()}>Reload Page</button>
+                    <button type='button' onClick={() => window.location.reload()}>Reload Page</button>
                 </div>
             }
         >
@@ -69,7 +69,6 @@ const router = createBrowserRouter(
 
 // Global copy trading manager instance - persists across tab changes
 let globalCopyTradingManager: CopyTradingManager | null = null;
-let globalReplicatorCleanup: (() => void) | null = null;
 
 // Initialize global copy trading replicator (runs once, persists across tab changes)
 function initializeGlobalCopyTrading() {
@@ -80,7 +79,7 @@ function initializeGlobalCopyTrading() {
     globalCopyTradingManager = new CopyTradingManager();
 
     // Initialize replicator immediately (don't wait)
-    globalReplicatorCleanup = initReplicator(globalCopyTradingManager);
+    initReplicator(globalCopyTradingManager);
 
     // Wait a bit for manager to restore state, then sync tokens
     setTimeout(() => {

@@ -7,6 +7,7 @@ import {
     V2GetActiveClientId,
     V2GetActiveToken,
 } from '@/external/bot-skeleton/services/api/appId';
+import { api_base } from '@/external/bot-skeleton/services/api/api-base';
 import { contract_stages } from '@/constants/contract-stage';
 import { useStore } from '@/hooks/useStore';
 import { isSpecialCRAccount } from '@/utils/special-accounts-config';
@@ -110,10 +111,13 @@ const SpeedBot = observer(() => {
             const api = await generateDerivApiInstance();
             apiRef.current = api;
             try {
-                // Fetch active symbols (volatility indices)
-                const { active_symbols, error: asErr } = await api.send({ active_symbols: 'brief' });
-                if (asErr) throw asErr;
-                const syn = (active_symbols || [])
+                // Fetch active symbols from api_base
+                // Wait for api_base to load symbols if not already loaded
+                if (!api_base.has_active_symbols && api_base.active_symbols_promise) {
+                    await api_base.active_symbols_promise;
+                }
+                const active_symbols = api_base.active_symbols || [];
+                const syn = active_symbols
                     .filter((s: any) => /synthetic/i.test(s.market) || /^R_/.test(s.symbol))
                     .map((s: any) => ({ symbol: s.symbol, display_name: s.display_name }));
                 setSymbols(syn);
@@ -535,9 +539,10 @@ const SpeedBot = observer(() => {
 
                     <div className='speedbot__row speedbot__row--two speedbot__toggles'>
                         <div className='speedbot__toggle'>
-                            <label>{localize('Alternate Even and Odd')}</label>
+                            <label htmlFor='sb-alt-even-odd'>{localize('Alternate Even and Odd')}</label>
                             <label className='switch'>
                                 <input
+                                    id='sb-alt-even-odd'
                                     type='checkbox'
                                     checked={altEvenOdd}
                                     onChange={e => setAltEvenOdd(e.target.checked)}
@@ -546,9 +551,10 @@ const SpeedBot = observer(() => {
                             </label>
                         </div>
                         <div className='speedbot__toggle'>
-                            <label>{localize('Alternate on Loss')}</label>
+                            <label htmlFor='sb-alt-on-loss'>{localize('Alternate on Loss')}</label>
                             <label className='switch'>
                                 <input
+                                    id='sb-alt-on-loss'
                                     type='checkbox'
                                     checked={altOnLoss}
                                     onChange={e => setAltOnLoss(e.target.checked)}
@@ -751,10 +757,10 @@ const SpeedBot = observer(() => {
                     </div>
 
                     <div className='speedbot__cta'>
-                        <button className='speedbot__cta-once' onClick={() => onRun()} disabled={!symbol}>
+                        <button type="button" className='speedbot__cta-once' onClick={() => onRun()} disabled={!symbol}>
                             {localize('Trade once')}
                         </button>
-                        <button className='speedbot__cta-auto' onClick={is_running ? onStop : onRun} disabled={!symbol}>
+                        <button type="button" className='speedbot__cta-auto' onClick={is_running ? onStop : onRun} disabled={!symbol}>
                             {is_running ? localize('Stop') : localize('Start auto trading')}
                         </button>
                     </div>

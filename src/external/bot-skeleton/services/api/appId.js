@@ -112,32 +112,26 @@ export const generateDerivApiInstance = async (forceNew = false) => {
             });
 
             const rawSend = deriv_api.send.bind(deriv_api);
-            deriv_api.send = request => {
-                // Add unique req_id if not present
-                if (request && typeof request === 'object' && !request.req_id) {
-                    request.req_id = Date.now() + Math.random().toString(36).substr(2, 9);
-                }
-                console.log('[Deriv] Sending request:', JSON.stringify(request, null, 2));
+        deriv_api.send = request => {
+            // Add unique req_id if not present - MUST BE INTEGER!
+            if (request && typeof request === 'object' && !request.req_id) {
+                request.req_id = Date.now() + Math.floor(Math.random() * 1000); // Integer instead of string!
+            }
 
-                if (isApiTokenSession() && request && typeof request === 'object') {
-                    if ('balance' in request) assertApiTokenScope('read');
-                    if (
-                        'buy' in request ||
-                        'sell' in request ||
-                        'proposal' in request ||
-                        'transaction' in request ||
-                        'proposal_open_contract' in request
-                    ) {
-                        assertApiTokenScope('trade');
-                    }
+            if (isApiTokenSession() && request && typeof request === 'object') {
+                if ('balance' in request) assertApiTokenScope('read');
+                if (
+                    'buy' in request ||
+                    'sell' in request ||
+                    'proposal' in request ||
+                    'transaction' in request ||
+                    'proposal_open_contract' in request
+                ) {
+                    assertApiTokenScope('trade');
                 }
-                return rawSend(request);
-            };
-
-            // Log all incoming messages
-            deriv_socket.onmessage = (event) => {
-                console.log('[Deriv] Incoming message:', event.data);
-            };
+            }
+            return rawSend(request);
+        };
 
             // Store the instance
             derivApiInstance = deriv_api;
@@ -214,15 +208,32 @@ export const getToken = () => {
         };
     }
 
-    // PKCE / session-based OAuth: the WebSocket URL is authenticated via OTP.
-    // There is no per-account token in localStorage, so we return a sentinel
-    // string so authorizeAndSubscribe() knows it can skip api.authorize().
+    // PKCE / session-based OAuth: prefer the session-backed auth state and only
+    // fall back to legacy token lookup if no session is available.
     if (isPKCESession()) {
         console.log('[getToken] PKCE session detected — skipping legacy token lookup');
         return {
             token: '__PKCE_SESSION__',
             account_id: active_loginid ?? undefined,
         };
+    }
+
+    // Some parts of the app still keep a session auth token in storage even when
+    // the newer OAuth flow is active, so surface that as a non-legacy session as well.
+    try {
+        const authInfoStr = sessionStorage.getItem('auth_info');
+        if (authInfoStr) {
+            const authInfo = JSON.parse(authInfoStr);
+            if (authInfo?.access_token) {
+                console.log('[getToken] Session auth_info found — using PKCE-style session state');
+                return {
+                    token: '__PKCE_SESSION__',
+                    account_id: active_loginid ?? undefined,
+                };
+            }
+        }
+    } catch (error) {
+        console.warn('[getToken] Failed to inspect auth_info session state:', error);
     }
 
     const accountsListRaw = localStorage.getItem('accountsList');
