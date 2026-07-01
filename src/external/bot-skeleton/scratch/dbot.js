@@ -115,6 +115,7 @@ class DBot {
                 }
                 const el_scratch_div = document.getElementById('scratch_div');
                 if (!el_scratch_div) {
+                    reject(new Error('Cannot initialize Blockly workspace: #scratch_div was not found.'));
                     return;
                 }
 
@@ -706,3 +707,4 @@ class DBot {
 }
 
 export default new DBot();
+
